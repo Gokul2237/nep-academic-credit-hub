@@ -3,88 +3,299 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const path = require('path');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 
-// Load environment variables
-dotenv.config();
+// ============================================================
+// LOAD ENVIRONMENT VARIABLES
+// ============================================================
+
+dotenv.config({
+  path: path.join(__dirname, '.env'),
+});
+
+// ============================================================
+// DATABASE
+// ============================================================
 
 const connectDB = require('./config/db');
+
+// ============================================================
+// ROUTES
+// ============================================================
+
 const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const creditRoutes = require('./routes/creditRoutes');
-const { ensureAdminAccount } = require('./controllers/authController');
-const { notFoundHandler, errorHandler } = require('./middleware/errorMiddleware');
+const studentRoutes = require('./routes/studentRoutes');
+
+// ============================================================
+// ADMIN BOOTSTRAP
+// ============================================================
+
+const {
+  ensureAdminAccount,
+} = require('./controllers/authController');
+
+// ============================================================
+// ERROR MIDDLEWARE
+// ============================================================
+
+const {
+  notFoundHandler,
+  errorHandler,
+} = require('./middleware/errorMiddleware');
+
+// ============================================================
+// APP INITIALIZATION
+// ============================================================
 
 const app = express();
+app.disable('etag');
+
 const PORT = process.env.PORT || 5000;
 
-// Connect to Database and bootstrap Admin
-connectDB().then(() => {
-  if (mongoose.connection.readyState === 1) {
-    ensureAdminAccount();
-  }
-});
+// ============================================================
+// SECURITY
+// ============================================================
 
-// Security & Request Parsing Middleware
 app.use(helmet());
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin:
+      process.env.CLIENT_URL ||
+      'http://localhost:5173',
+
     credentials: true,
   })
 );
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ============================================================
+// REQUEST PARSING
+// ============================================================
+
+app.use(
+  express.json({
+    limit: '10mb',
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10mb',
+  })
+);
+
+// ============================================================
+// DEVELOPMENT REQUEST LOGGING
+// ============================================================
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Rate Limiter for Authentication Endpoints
+// ============================================================
+// AUTHENTICATION RATE LIMITER
+// ============================================================
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
+
   max: 100,
+
   standardHeaders: true,
+
   legacyHeaders: false,
+
   message: {
     success: false,
-    message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.',
+    message:
+      'Too many authentication attempts from this IP. Please try again after 15 minutes.',
   },
 });
 
-// Health Check Route
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
 app.get('/api/health', (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const dbStatus =
+    mongoose.connection.readyState === 1
+      ? 'connected'
+      : 'disconnected';
+
   return res.status(200).json({
     success: true,
+
     message: 'NEP Credit Hub API is running',
+
     timestamp: new Date().toISOString(),
+
     database: dbStatus,
   });
 });
 
-// Mount Routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/v1/auth', authLimiter, authRoutes);
+// ============================================================
+// API ROUTES
+// ============================================================
 
-app.use('/api/courses', courseRoutes);
-app.use('/api/v1/courses', courseRoutes);
+/*
+ * ============================================================
+ * AUTHENTICATION
+ * ============================================================
+ */
 
-app.use('/api/credits', creditRoutes);
-app.use('/api/v1/credits', creditRoutes);
+app.use(
+  '/api/auth',
+  authLimiter,
+  authRoutes
+);
 
-// Error Handling Middleware
+app.use(
+  '/api/v1/auth',
+  authLimiter,
+  authRoutes
+);
+
+/*
+ * ============================================================
+ * COURSE CATALOG
+ * ============================================================
+ */
+
+app.use(
+  '/api/courses',
+  courseRoutes
+);
+
+app.use(
+  '/api/v1/courses',
+  courseRoutes
+);
+
+/*
+ * ============================================================
+ * ACADEMIC CREDITS
+ * ============================================================
+ */
+
+app.use(
+  '/api/credits',
+  creditRoutes
+);
+
+app.use(
+  '/api/v1/credits',
+  creditRoutes
+);
+
+/*
+ * ============================================================
+ * STUDENTS
+ * ============================================================
+ *
+ * Institution users:
+ *   Can see students belonging to their institution.
+ *
+ * Admin users:
+ *   Can see all active students.
+ *
+ * Students:
+ *   Are not allowed to access this endpoint.
+ *
+ * Main endpoint:
+ *   GET /api/students
+ *
+ * Versioned endpoint:
+ *   GET /api/v1/students
+ *
+ */
+
+app.use(
+  '/api/students',
+  studentRoutes
+);
+
+app.use(
+  '/api/v1/students',
+  studentRoutes
+);
+
+// ============================================================
+// ERROR HANDLING
+// ============================================================
+
+/*
+ * 404 - Route not found
+ */
 app.use(notFoundHandler);
+
+/*
+ * Global error handler
+ */
 app.use(errorHandler);
+
+// ============================================================
+// DATABASE CONNECTION
+// ============================================================
+
+connectDB()
+  .then(async () => {
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Database ready');
+
+      /*
+       * Create the initial admin only internally.
+       *
+       * There is NO public admin registration endpoint.
+       */
+      await ensureAdminAccount();
+    }
+  })
+  .catch((error) => {
+    console.error(
+      '❌ Database initialization failed:',
+      error.message
+    );
+  });
+
+// ============================================================
+// START SERVER
+// ============================================================
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`🚀 NEP Academic Hub Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-    console.log(`📡 Health Check endpoint: http://localhost:${PORT}/api/health`);
-    console.log(`📚 Course Catalog API: http://localhost:${PORT}/api/courses`);
-    console.log(`🎓 Academic Credits API: http://localhost:${PORT}/api/credits`);
+    console.log(
+      `🚀 NEP Academic Hub Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`
+    );
+
+    console.log(
+      `📡 Health Check: http://localhost:${PORT}/api/health`
+    );
+
+    console.log(
+      `🔐 Authentication API: http://localhost:${PORT}/api/auth`
+    );
+
+    console.log(
+      `📚 Course Catalog API: http://localhost:${PORT}/api/courses`
+    );
+
+    console.log(
+      `🎓 Academic Credits API: http://localhost:${PORT}/api/credits`
+    );
+
+    console.log(
+      `👨‍🎓 Students API: http://localhost:${PORT}/api/students`
+    );
   });
 }
+
+// ============================================================
+// EXPORT APP
+// ============================================================
 
 module.exports = app;

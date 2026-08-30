@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const api = axios.create({
@@ -8,32 +9,57 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// Request Interceptor: Attach JWT Token if available
+// --------------------------------------------------
+// REQUEST INTERCEPTOR
+// Attach JWT token
+// --------------------------------------------------
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('nep_token');
+
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle Global 401 Unauthorized or Error extraction
+// --------------------------------------------------
+// RESPONSE INTERCEPTOR
+// Return response.data directly
+// --------------------------------------------------
+
 api.interceptors.response.use(
   (response) => response.data,
+
   (error) => {
     const customError = {
-      message: error.response?.data?.message || error.message || 'An unexpected error occurred',
-      errors: error.response?.data?.errors || null,
-      status: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        'An unexpected error occurred',
+
+      errors:
+        error.response?.data?.errors ||
+        null,
+
+      status:
+        error.response?.status ||
+        500,
+
+      response: error.response || null,
     };
 
+    console.error('API Error:', customError);
+
     if (error.response?.status === 401) {
-      // Clear token on 401 (if not already logging out)
       localStorage.removeItem('nep_token');
       localStorage.removeItem('nep_user');
+
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
