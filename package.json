@@ -1,0 +1,28 @@
+{
+  "name": "nep-academic-credit-hub",
+  "version": "1.0.0",
+  "description": "NEP Aligned Standardized Academic Credit Accumulation Hub with Cross-Institutional Authentication API Gateways",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "npm run dev --prefix server",
+    "client:dev": "npm run dev --prefix client",
+    "server:start": "npm start --prefix server",
+    "client:build": "npm run build --prefix client",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "nep-2020",
+    "academic-bank-of-credits",
+    "credit-transfer",
+    "policy-engine",
+    "api-gateway",
+    "cross-institution-auth"
+  ],
+  "author": "S5 CSE Mini Project Team",
+  "license": "MIT"
+}
