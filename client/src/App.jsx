@@ -7,9 +7,23 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+
+// Student Views
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentWalletPage from './pages/student/StudentWalletPage';
+import StudentTimelinePage from './pages/student/StudentTimelinePage';
+
+// Institution Views
 import InstitutionDashboard from './pages/institution/InstitutionDashboard';
+import InstitutionCoursesPage from './pages/institution/InstitutionCoursesPage';
+import InstitutionCreditsPage from './pages/institution/InstitutionCreditsPage';
+
+// Admin Views
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCoursesPage from './pages/admin/AdminCoursesPage';
+import AdminCreditsPage from './pages/admin/AdminCreditsPage';
+
+// Placeholder Component for Future Phases
 import PlaceholderPage from './components/common/PlaceholderPage';
 
 // Icons for Landing Page
@@ -23,8 +37,6 @@ import {
   Activity,
   Layers,
   Sparkles,
-  Award,
-  Globe,
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -186,19 +198,19 @@ function HomePage() {
         <div className="mt-12 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400">
           <div className="flex items-center space-x-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Policy Versioning Engine</span>
+            <span>Digital Credit Wallet & Timeline Active</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Explainable Evaluation Engine</span>
+            <span>SHA-256 Credit Integrity Hashing</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>B2B REST API Gateway</span>
+            <span>Course Catalog Management</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>SHA-256 Tamper-Proof Ledger</span>
+            <span>Multi-Tenant RBAC Protection</span>
           </div>
         </div>
       </main>
@@ -209,10 +221,10 @@ function HomePage() {
           <p>© 2026 NEP Academic Credit Accumulation Hub. S5 CSE Mini Project.</p>
           <div className="flex items-center space-x-4">
             <span className="px-2 py-0.5 rounded bg-slate-900 text-slate-400 font-mono text-[10px]">
-              Phase 2: Auth & RBAC Active
+              Phase 3: Academic Credit & Catalog Active
             </span>
             <span className="text-slate-600">|</span>
-            <span className="text-slate-400">JWT + bcrypt + MongoDB Atlas</span>
+            <span className="text-slate-400">MERN Stack</span>
           </div>
         </div>
       </footer>
@@ -241,32 +253,14 @@ export default function App() {
           >
             <Route index element={<Navigate to="/student/dashboard" replace />} />
             <Route path="dashboard" element={<StudentDashboard />} />
-            <Route
-              path="wallet"
-              element={
-                <PlaceholderPage
-                  title="Digital Academic Credit Wallet"
-                  description="View total credits, verified credits, and credits earned across participating institutions."
-                  phase="Phase 3"
-                />
-              }
-            />
-            <Route
-              path="timeline"
-              element={
-                <PlaceholderPage
-                  title="Cross-Institution Credit Timeline"
-                  description="Chronological visual progression of academic credits earned by semester, year, and institution."
-                  phase="Phase 3"
-                />
-              }
-            />
+            <Route path="wallet" element={<StudentWalletPage />} />
+            <Route path="timeline" element={<StudentTimelinePage />} />
             <Route
               path="eligibility"
               element={
                 <PlaceholderPage
                   title="NEP Eligibility Tracker"
-                  description="Real-time evaluation of earned credits against selected academic program and graduation requirements."
+                  description="Real-time evaluation of earned credits against selected academic program requirements."
                   phase="Phase 6"
                 />
               }
@@ -354,26 +348,8 @@ export default function App() {
                 />
               }
             />
-            <Route
-              path="courses"
-              element={
-                <PlaceholderPage
-                  title="Course Catalog Management"
-                  description="Publish and manage NEP-aligned course syllabi, levels, prerequisites, and credit values."
-                  phase="Phase 3"
-                />
-              }
-            />
-            <Route
-              path="credits"
-              element={
-                <PlaceholderPage
-                  title="Academic Credit Ledger"
-                  description="Award, sign with SHA-256 verification hashes, and manage student course credits."
-                  phase="Phase 3"
-                />
-              }
-            />
+            <Route path="courses" element={<InstitutionCoursesPage />} />
+            <Route path="credits" element={<InstitutionCreditsPage />} />
             <Route
               path="transfers"
               element={
@@ -487,26 +463,8 @@ export default function App() {
                 />
               }
             />
-            <Route
-              path="courses"
-              element={
-                <PlaceholderPage
-                  title="National Course Catalog"
-                  description="Cross-institutional course registry and standardization index."
-                  phase="Phase 8"
-                />
-              }
-            />
-            <Route
-              path="credits"
-              element={
-                <PlaceholderPage
-                  title="Global Credit Ledger"
-                  description="System-wide tamper-evident credit issuance and transfer audit records."
-                  phase="Phase 8"
-                />
-              }
-            />
+            <Route path="courses" element={<AdminCoursesPage />} />
+            <Route path="credits" element={<AdminCreditsPage />} />
             <Route
               path="certificates"
               element={

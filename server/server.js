@@ -11,6 +11,8 @@ dotenv.config();
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const courseRoutes = require('./routes/courseRoutes');
+const creditRoutes = require('./routes/creditRoutes');
 const { ensureAdminAccount } = require('./controllers/authController');
 const { notFoundHandler, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -39,10 +41,10 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Rate Limiter for Authentication Endpoints (Protects against brute force)
+// Rate Limiter for Authentication Endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -62,9 +64,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount Authentication Routes
+// Mount Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/v1/auth', authLimiter, authRoutes);
+
+app.use('/api/courses', courseRoutes);
+app.use('/api/v1/courses', courseRoutes);
+
+app.use('/api/credits', creditRoutes);
+app.use('/api/v1/credits', creditRoutes);
 
 // Error Handling Middleware
 app.use(notFoundHandler);
@@ -74,7 +82,8 @@ if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`🚀 NEP Academic Hub Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
     console.log(`📡 Health Check endpoint: http://localhost:${PORT}/api/health`);
-    console.log(`🔒 Auth API endpoints mounted at: http://localhost:${PORT}/api/auth`);
+    console.log(`📚 Course Catalog API: http://localhost:${PORT}/api/courses`);
+    console.log(`🎓 Academic Credits API: http://localhost:${PORT}/api/credits`);
   });
 }
 
