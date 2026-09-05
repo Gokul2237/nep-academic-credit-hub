@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 
 import {
   ShieldCheck,
@@ -14,10 +15,6 @@ import {
   BookOpen,
   Building2,
 } from 'lucide-react';
-
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:5000/api';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -74,40 +71,12 @@ export default function RegisterPage() {
     const fetchInstitutions = async () => {
       try {
         setInstitutionsLoading(true);
-
         setError('');
 
-        const response = await fetch(
-          `${API_URL}/auth/institutions`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-              'Failed to load institutions.'
-          );
-        }
-
-        /*
-         * ApiResponse.success returns:
-         *
-         * {
-         *   data: {
-         *      institutions: [...]
-         *   }
-         * }
-         */
-
-        setInstitutions(
-          data.data?.institutions || []
-        );
+        const list = await authService.getInstitutions();
+        setInstitutions(list || []);
       } catch (err) {
-        console.error(
-          'Failed to load institutions:',
-          err
-        );
+        console.error('Failed to load institutions:', err);
 
         setError(
           err.message ||

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { User, ROLES } = require('../models/User');
 const Institution = require('../models/Institution');
 const { generateToken } = require('../utils/tokenHelper');
@@ -168,6 +169,14 @@ const register = async (req, res) => {
         );
       }
 
+      if (!mongoose.Types.ObjectId.isValid(institutionId)) {
+        return ApiResponse.error(
+          res,
+          'Invalid institution identifier provided.',
+          400
+        );
+      }
+
       // Find selected institution
       const institution = await Institution.findById(
         institutionId
@@ -189,6 +198,14 @@ const register = async (req, res) => {
         return ApiResponse.error(
           res,
           'Selected institution is not verified.',
+          403
+        );
+      }
+
+      if (institution.isActive === false) {
+        return ApiResponse.error(
+          res,
+          'Selected institution is currently inactive.',
           403
         );
       }
@@ -327,13 +344,33 @@ const login = async (req, res) => {
     }
 
     // ============================================================
-    // 5. GENERATE TOKEN
+    // 5. SYNCHRONIZE INSTITUTION RELATIONSHIP IF NEEDED
+    // ============================================================
+
+    if (user.role === ROLES.INSTITUTION || user.role === ROLES.STUDENT) {
+      let inst = null;
+      if (user.institutionId && mongoose.Types.ObjectId.isValid(user.institutionId)) {
+        inst = await Institution.findById(user.institutionId);
+      }
+      if (!inst && user.institutionCode) {
+        inst = await Institution.findOne({ code: user.institutionCode.toUpperCase().trim() });
+      }
+      if (inst && (!user.institutionId || user.institutionId.toString() !== inst._id.toString())) {
+        user.institutionId = inst._id;
+        user.institutionCode = inst.code;
+        user.institutionName = inst.name;
+        await user.save();
+      }
+    }
+
+    // ============================================================
+    // 6. GENERATE TOKEN
     // ============================================================
 
     const token = generateToken(user);
 
     // ============================================================
-    // 6. RESPONSE
+    // 7. RESPONSE
     // ============================================================
 
     return ApiResponse.success(
@@ -392,8 +429,9 @@ const getInstitutions = async (req, res) => {
   try {
     const institutions = await Institution.find({
       verificationStatus: 'VERIFIED',
+      isActive: true,
     })
-      .select('_id name code')
+      .select('_id name code type')
       .sort({ name: 1 });
 
     return ApiResponse.success(

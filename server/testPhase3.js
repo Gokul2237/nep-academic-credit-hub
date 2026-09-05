@@ -41,29 +41,15 @@ async function runPhase3Tests() {
   let inst1Token = null;
   let inst1Id = null;
   let inst2Token = null;
+  let inst2Id = null;
   let adminToken = null;
   let course1Id = null;
+  let course2Id = null;
   let credit1Id = null;
 
   try {
     // 0. Onboard Test Users
-    console.log('0️⃣  Setting up test personas (Student 1, Student 2, Inst 1, Inst 2, Admin)...');
-    
-    // Register Student 1
-    const s1 = await makeRequest(
-      { hostname: 'localhost', port: 5000, path: '/api/auth/register', method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      { name: 'Aarav Sharma', email: studentEmail, password, role: 'student', studentId: `ABC-P3-${testId}` }
-    );
-    studentToken = s1.body.data.token;
-    studentId = s1.body.data.user._id;
-
-    // Register Student 2
-    const s2 = await makeRequest(
-      { hostname: 'localhost', port: 5000, path: '/api/auth/register', method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      { name: 'Diya Sen', email: student2Email, password, role: 'student', studentId: `ABC-P3-2-${testId}` }
-    );
-    student2Token = s2.body.data.token;
-    student2Id = s2.body.data.user._id;
+    console.log('0️⃣  Setting up test personas (Inst 1, Inst 2, Student 1, Student 2, Admin)...');
 
     // Register Inst 1 (IITB)
     const i1 = await makeRequest(
@@ -79,6 +65,30 @@ async function runPhase3Tests() {
       { name: 'Dr. NITK Officer', email: inst2Email, password, role: 'institution', institutionName: 'NIT Karnataka', institutionCode: `NITK_${testId}` }
     );
     inst2Token = i2.body.data.token;
+    inst2Id = i2.body.data.user.institutionId;
+
+    // Verify Student Registration fails without institutionId
+    const sFail = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/auth/register', method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { name: 'No Inst Student', email: `fail_${testId}@test.ac.in`, password, role: 'student' }
+    );
+    if (sFail.status !== 400) throw new Error('Student registration without institutionId was not rejected');
+
+    // Register Student 1 (belongs to Inst 1)
+    const s1 = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/auth/register', method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { name: 'Aarav Sharma', email: studentEmail, password, role: 'student', studentId: `ABC-P3-${testId}`, institutionId: inst1Id }
+    );
+    studentToken = s1.body.data.token;
+    studentId = s1.body.data.user._id;
+
+    // Register Student 2 (belongs to Inst 2)
+    const s2 = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/auth/register', method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { name: 'Diya Sen', email: student2Email, password, role: 'student', studentId: `ABC-P3-2-${testId}`, institutionId: inst2Id }
+    );
+    student2Token = s2.body.data.token;
+    student2Id = s2.body.data.user._id;
 
     // Login Admin
     const adm = await makeRequest(
@@ -86,7 +96,7 @@ async function runPhase3Tests() {
       { email: 'admin@nep.gov.in', password: 'Admin@123456' }
     );
     adminToken = adm.body.data.token;
-    console.log('   ✓ Personas successfully onboarded\n');
+    console.log('   ✓ Personas successfully onboarded with validated institution associations\n');
 
     // 1. Institution 1 creates a Course
     console.log('1️⃣  Testing Course Creation (Institution 1)...');
@@ -261,7 +271,61 @@ async function runPhase3Tests() {
     console.log(`   Admin saw ${adminCredits.body.data.length} total records across institutions`);
     if (adminCredits.status !== 200 || adminCredits.body.data.length === 0) throw new Error('Admin ledger access failed');
 
-    console.log('\n🎉 ALL 15 PHASE 3 BACKEND TESTS PASSED SUCCESSFULLY!\n');
+    // 16. Institution 2 cannot award credit to Institution 1's Student (Tenant Isolation on Credit Issuance)
+    console.log('\n1️⃣6️⃣ Testing Tenant Isolation: Inst 2 awarding credit to Inst 1 Student (Expected 403)...');
+    // First let Inst 2 create its own course
+    const c2 = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/courses', method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${inst2Token}` } },
+      { courseCode: `NITK101_${testId}`, courseName: 'Data Structures', credits: 4, department: 'CSE', semester: 3 }
+    );
+    course2Id = c2.body.data._id;
+
+    const crossInstCredit = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/credits', method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${inst2Token}` } },
+      {
+        studentEmail, // Student 1 belongs to Inst 1!
+        courseId: course2Id,
+        credits: 4,
+        grade: 'A',
+        semester: 3,
+        academicYear: '2025-26',
+      }
+    );
+    console.log(`   Status: ${crossInstCredit.status} (Expected: 403)`);
+    console.log(`   Response: ${crossInstCredit.body.message}`);
+    if (crossInstCredit.status !== 403) throw new Error('Cross-institution credit award was not blocked');
+
+    // 17. Institution 1 queries GET /api/students (only sees its own students)
+    console.log('\n1️⃣7️⃣ Testing Institution Student Scoping: Inst 1 only sees own students...');
+    const inst1Students = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/students', method: 'GET', headers: { Authorization: `Bearer ${inst1Token}` } }
+    );
+    console.log(`   Status: ${inst1Students.status} (Expected: 200)`);
+    const student1Found = inst1Students.body.data.some((s) => s.email === studentEmail);
+    const student2Found = inst1Students.body.data.some((s) => s.email === student2Email);
+    console.log(`   Inst 1 student count: ${inst1Students.body.data.length}, Found Student 1: ${student1Found}, Found Student 2: ${student2Found}`);
+    if (!student1Found || student2Found) throw new Error('Institution student list leakage or missing own student');
+
+    // 18. Student cannot access GET /api/students (RBAC: 403)
+    console.log('\n1️⃣8️⃣ Testing Student accessing /api/students (Expected 403)...');
+    const stdStudentsAccess = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/students', method: 'GET', headers: { Authorization: `Bearer ${studentToken}` } }
+    );
+    console.log(`   Status: ${stdStudentsAccess.status} (Expected: 403)`);
+    if (stdStudentsAccess.status !== 403) throw new Error('Student was able to access /api/students');
+
+    // 19. Admin queries GET /api/students (sees all active students)
+    console.log('\n1️⃣9️⃣ Testing Admin accessing /api/students (sees all students across institutions)...');
+    const adminStudents = await makeRequest(
+      { hostname: 'localhost', port: 5000, path: '/api/students', method: 'GET', headers: { Authorization: `Bearer ${adminToken}` } }
+    );
+    console.log(`   Status: ${adminStudents.status} (Expected: 200)`);
+    const adminHasS1 = adminStudents.body.data.some((s) => s.email === studentEmail);
+    const adminHasS2 = adminStudents.body.data.some((s) => s.email === student2Email);
+    console.log(`   Admin sees S1: ${adminHasS1}, S2: ${adminHasS2}`);
+    if (!adminHasS1 || !adminHasS2) throw new Error('Admin could not see all students');
+
+    console.log('\n🎉 ALL 19 PHASE 3 & TENANT ISOLATION BACKEND TESTS PASSED SUCCESSFULLY!\n');
     process.exit(0);
   } catch (error) {
     console.error('\n❌ Phase 3 Test Suite Failed:', error.message);

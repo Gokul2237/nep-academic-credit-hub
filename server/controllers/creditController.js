@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { AcademicCredit } = require('../models/AcademicCredit');
 const { Course } = require('../models/Course');
 const { User, ROLES } = require('../models/User');
@@ -31,8 +32,12 @@ const createCredit = async (req, res) => {
         role: ROLES.STUDENT,
       });
     } else if (inputStudentId) {
+      const queryConditions = [{ studentId: String(inputStudentId).trim() }];
+      if (mongoose.Types.ObjectId.isValid(inputStudentId)) {
+        queryConditions.push({ _id: inputStudentId });
+      }
       student = await User.findOne({
-        $or: [{ _id: inputStudentId }, { studentId: inputStudentId }],
+        $or: queryConditions,
         role: ROLES.STUDENT,
       });
     }
@@ -52,8 +57,20 @@ const createCredit = async (req, res) => {
       if (!institutionId) {
         return ApiResponse.error(res, 'User is not linked to any institution record.', 400);
       }
+
+      // STRICT TENANT ISOLATION: Student must belong to the awarding institution
+      if (
+        !student.institutionId ||
+        student.institutionId.toString() !== institutionId.toString()
+      ) {
+        return ApiResponse.error(
+          res,
+          'Cannot award credit: The student does not belong to your institution.',
+          403
+        );
+      }
     } else if (req.user.role === 'admin') {
-      institutionId = req.body.institutionId;
+      institutionId = req.body.institutionId || student.institutionId;
       if (!institutionId) {
         return ApiResponse.error(res, 'Admin must specify institutionId.', 400);
       }
@@ -263,7 +280,12 @@ const getStudentCredits = async (req, res) => {
       return ApiResponse.error(res, 'Access denied. Cannot view other students credits.', 403);
     }
 
-    const credits = await AcademicCredit.find({ studentId: targetStudentId })
+    const query = { studentId: targetStudentId };
+    if (req.user.role === 'institution') {
+      query.institutionId = req.user.institutionId;
+    }
+
+    const credits = await AcademicCredit.find(query)
       .populate('courseId', 'courseCode courseName credits department courseLevel')
       .populate('institutionId', 'name code')
       .sort({ academicYear: -1, semester: -1 });

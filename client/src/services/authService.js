@@ -43,6 +43,12 @@ export const authService = {
     }
   },
 
+  // Get verified institutions for student registration
+  getInstitutions: async () => {
+    const response = await api.get('/auth/institutions');
+    return response.data?.institutions || response.institutions || [];
+  },
+
   // Get locally cached token
   getToken: () => {
     return localStorage.getItem('nep_token');

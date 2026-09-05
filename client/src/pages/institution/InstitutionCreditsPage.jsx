@@ -708,21 +708,12 @@ export default function InstitutionCreditsPage() {
                     </option>
 
                     {students.map((student) => (
-
                       <option
                         key={student._id}
                         value={student._id}
                       >
-
-                        {student.name}
-                        {' — '}
-                        {student.email}
-                        {' — '}
-                        {student.studentId ||
-                          'No ABC ID'}
-
+                        {student.name} — {student.studentId || student.email}
                       </option>
-
                     ))}
 
                   </select>

@@ -36,34 +36,12 @@ async function runTests() {
 
   let studentToken = null;
   let instToken = null;
+  let instId = null;
   let adminToken = null;
 
   try {
-    // 1. Student Registration
-    console.log('1️⃣  Testing Student Registration...');
-    const regStudent = await makeRequest(
-      {
-        hostname: 'localhost',
-        port: 5000,
-        path: '/api/auth/register',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      },
-      {
-        name: `Rahul Sharma ${testId}`,
-        email: studentEmail,
-        password,
-        role: 'student',
-        studentId: `ABC-9876${testId}`,
-      }
-    );
-    console.log(`   Status: ${regStudent.status} (Expected: 201)`);
-    console.log(`   Response:`, regStudent.body.message);
-    if (regStudent.status !== 201) throw new Error('Student registration failed');
-    studentToken = regStudent.body.data.token;
-
-    // 2. Institution Registration
-    console.log('\n2️⃣  Testing Institution Registration...');
+    // 1. Institution Registration
+    console.log('1️⃣  Testing Institution Registration...');
     const regInst = await makeRequest(
       {
         hostname: 'localhost',
@@ -85,6 +63,31 @@ async function runTests() {
     console.log(`   Response:`, regInst.body.message);
     if (regInst.status !== 201) throw new Error('Institution registration failed');
     instToken = regInst.body.data.token;
+    instId = regInst.body.data.user.institutionId;
+
+    // 2. Student Registration (with associated institutionId)
+    console.log('\n2️⃣  Testing Student Registration (Associated with Institution)...');
+    const regStudent = await makeRequest(
+      {
+        hostname: 'localhost',
+        port: 5000,
+        path: '/api/auth/register',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+      {
+        name: `Rahul Sharma ${testId}`,
+        email: studentEmail,
+        password,
+        role: 'student',
+        studentId: `ABC-9876${testId}`,
+        institutionId: instId,
+      }
+    );
+    console.log(`   Status: ${regStudent.status} (Expected: 201)`);
+    console.log(`   Response:`, regStudent.body.message);
+    if (regStudent.status !== 201) throw new Error('Student registration failed');
+    studentToken = regStudent.body.data.token;
 
     // 3. Duplicate Email Prevention
     console.log('\n3️⃣  Testing Duplicate Email Prevention...');
@@ -101,6 +104,7 @@ async function runTests() {
         email: studentEmail,
         password,
         role: 'student',
+        institutionId: instId,
       }
     );
     console.log(`   Status: ${dupTest.status} (Expected: 409)`);

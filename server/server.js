@@ -224,6 +224,16 @@ app.use(
   studentRoutes
 );
 
+app.use(
+  '/api/users/students',
+  studentRoutes
+);
+
+app.use(
+  '/api/v1/users/students',
+  studentRoutes
+);
+
 // ============================================================
 // ERROR HANDLING
 // ============================================================
