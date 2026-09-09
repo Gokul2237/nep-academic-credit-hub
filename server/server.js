@@ -29,6 +29,7 @@ const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const creditRoutes = require('./routes/creditRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const transferRoutes = require('./routes/transferRoutes');
 
 // ============================================================
 // ADMIN BOOTSTRAP
@@ -153,7 +154,14 @@ app.use(
   authLimiter,
   authRoutes
 );
-
+app.use(
+  '/api/transfers',
+  transferRoutes
+);
+ app.use(
+  '/api/v1/transfers',
+  transferRoutes
+);
 app.use(
   '/api/v1/auth',
   authLimiter,
