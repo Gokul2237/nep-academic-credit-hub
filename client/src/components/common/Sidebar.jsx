@@ -29,45 +29,182 @@ import {
 } from 'lucide-react';
 
 const studentNavItems = [
-  { name: 'Overview', path: '/student/dashboard', icon: LayoutDashboard },
-  { name: 'Digital Credit Wallet', path: '/student/wallet', icon: Wallet },
-  { name: 'Credit Timeline', path: '/student/timeline', icon: Clock },
-  { name: 'Eligibility Tracker', path: '/student/eligibility', icon: CheckCircle },
-  { name: 'Academic Pathway', path: '/student/pathway', icon: GitFork },
-  { name: 'Course Recommendations', path: '/student/recommendations', icon: Sparkles },
-  { name: 'Transfer Simulator', path: '/student/simulator', icon: ArrowRightLeft },
-  { name: 'Certificates', path: '/student/certificates', icon: Award },
-  { name: 'Verifiable Transcript', path: '/student/transcript', icon: FileText },
-  { name: 'My Profile', path: '/student/profile', icon: User },
+  {
+    name: 'Overview',
+    path: '/student/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    name: 'Digital Credit Wallet',
+    path: '/student/wallet',
+    icon: Wallet,
+  },
+  {
+    name: 'Credit Timeline',
+    path: '/student/timeline',
+    icon: Clock,
+  },
+  {
+    name: 'Eligibility Tracker',
+    path: '/student/eligibility',
+    icon: CheckCircle,
+  },
+  {
+    name: 'Academic Pathway',
+    path: '/student/pathway',
+    icon: GitFork,
+  },
+  {
+    name: 'Course Recommendations',
+    path: '/student/recommendations',
+    icon: Sparkles,
+  },
+  {
+    name: 'Transfer Simulator',
+    path: '/student/simulator',
+    icon: ArrowRightLeft,
+  },
+  {
+    name: 'Certificates',
+    path: '/student/certificates',
+    icon: Award,
+  },
+  {
+    name: 'Verifiable Transcript',
+    path: '/student/transcript',
+    icon: FileText,
+  },
+  {
+    name: 'Academic Passport',
+    path: '/student/passport',
+    icon: ShieldCheck,
+  },
+  {
+    name: 'My Profile',
+    path: '/student/profile',
+    icon: User,
+  },
 ];
 
 const institutionNavItems = [
-  { name: 'Overview', path: '/institution/dashboard', icon: LayoutDashboard },
-  { name: 'Student Management', path: '/institution/students', icon: Users },
-  { name: 'Course Management', path: '/institution/courses', icon: BookOpen },
-  { name: 'Academic Credits', path: '/institution/credits', icon: GraduationCap },
-  { name: 'Transfer Requests', path: '/institution/transfers', icon: ArrowRightLeft },
-  { name: 'Credit Policies', path: '/institution/policies', icon: Shield },
-  { name: 'Policy Versions', path: '/institution/policy-versions', icon: Layers },
-  { name: 'API Gateway', path: '/institution/api-gateway', icon: Webhook },
-  { name: 'API Keys', path: '/institution/api-keys', icon: Key },
-  { name: 'API Logs', path: '/institution/api-logs', icon: ScrollText },
-  { name: 'Transfer Decisions', path: '/institution/decisions', icon: FileCheck },
-  { name: 'Certificate Verification', path: '/institution/verify-certificates', icon: Award },
+  {
+    name: 'Overview',
+    path: '/institution/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    name: 'Student Management',
+    path: '/institution/students',
+    icon: Users,
+  },
+  {
+    name: 'Course Management',
+    path: '/institution/courses',
+    icon: BookOpen,
+  },
+  {
+    name: 'Academic Credits',
+    path: '/institution/credits',
+    icon: GraduationCap,
+  },
+  {
+    name: 'Transfer Requests',
+    path: '/institution/transfers',
+    icon: ArrowRightLeft,
+  },
+  {
+    name: 'Credit Policies',
+    path: '/institution/policies',
+    icon: Shield,
+  },
+  {
+    name: 'Policy Versions',
+    path: '/institution/policy-versions',
+    icon: Layers,
+  },
+  {
+    name: 'API Gateway',
+    path: '/institution/api-gateway',
+    icon: Webhook,
+  },
+  {
+    name: 'API Keys',
+    path: '/institution/api-keys',
+    icon: Key,
+  },
+  {
+    name: 'API Logs',
+    path: '/institution/api-logs',
+    icon: ScrollText,
+  },
+  {
+    name: 'Transfer Decisions',
+    path: '/institution/decisions',
+    icon: FileCheck,
+  },
+  {
+    name: 'Certificate Verification',
+    path: '/institution/verify-certificates',
+    icon: Award,
+  },
 ];
 
 const adminNavItems = [
-  { name: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Student Management', path: '/admin/students', icon: Users },
-  { name: 'Institution Management', path: '/admin/institutions', icon: Building2 },
-  { name: 'Course Catalog', path: '/admin/courses', icon: BookOpen },
-  { name: 'Credit Ledger', path: '/admin/credits', icon: GraduationCap },
-  { name: 'Certificates', path: '/admin/certificates', icon: Award },
-  { name: 'Policy Monitoring', path: '/admin/policies', icon: Shield },
-  { name: 'API Telemetry', path: '/admin/api-monitoring', icon: Activity },
-  { name: 'Transfer Flow', path: '/admin/transfers', icon: ArrowRightLeft },
-  { name: 'Platform Audit Logs', path: '/admin/audit-logs', icon: ScrollText },
-  { name: 'System Analytics', path: '/admin/analytics', icon: BarChart3 },
+  {
+    name: 'Overview',
+    path: '/admin/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    name: 'Student Management',
+    path: '/admin/students',
+    icon: Users,
+  },
+  {
+    name: 'Institution Management',
+    path: '/admin/institutions',
+    icon: Building2,
+  },
+  {
+    name: 'Course Catalog',
+    path: '/admin/courses',
+    icon: BookOpen,
+  },
+  {
+    name: 'Credit Ledger',
+    path: '/admin/credits',
+    icon: GraduationCap,
+  },
+  {
+    name: 'Certificates',
+    path: '/admin/certificates',
+    icon: Award,
+  },
+  {
+    name: 'Policy Monitoring',
+    path: '/admin/policies',
+    icon: Shield,
+  },
+  {
+    name: 'API Telemetry',
+    path: '/admin/api-monitoring',
+    icon: Activity,
+  },
+  {
+    name: 'Transfer Flow',
+    path: '/admin/transfers',
+    icon: ArrowRightLeft,
+  },
+  {
+    name: 'Platform Audit Logs',
+    path: '/admin/audit-logs',
+    icon: ScrollText,
+  },
+  {
+    name: 'System Analytics',
+    path: '/admin/analytics',
+    icon: BarChart3,
+  },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -77,10 +214,13 @@ export default function Sidebar({ isOpen, onClose }) {
     switch (user?.role) {
       case 'student':
         return studentNavItems;
+
       case 'institution':
         return institutionNavItems;
+
       case 'admin':
         return adminNavItems;
+
       default:
         return [];
     }
@@ -110,10 +250,12 @@ export default function Sidebar({ isOpen, onClose }) {
             <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
+
             <div>
               <span className="font-bold text-sm text-slate-100 block leading-tight">
                 NEP Academic Hub
               </span>
+
               <span className="text-[10px] text-slate-400 font-mono">
                 {user?.role === 'student'
                   ? 'Student Portal'
@@ -143,6 +285,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {navItems.map((item) => {
             const Icon = item.icon;
+
             return (
               <NavLink
                 key={item.path}
@@ -157,7 +300,10 @@ export default function Sidebar({ isOpen, onClose }) {
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{item.name}</span>
+
+                <span className="truncate">
+                  {item.name}
+                </span>
               </NavLink>
             );
           })}
@@ -168,9 +314,15 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-[11px]">
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-300 font-medium capitalize">{user?.role || 'Guest'} Node</span>
+
+              <span className="text-slate-300 font-medium capitalize">
+                {user?.role || 'Guest'} Node
+              </span>
             </div>
-            <span className="text-slate-400 font-mono text-[10px]">v1.0.0</span>
+
+            <span className="text-slate-400 font-mono text-[10px]">
+              v1.0.0
+            </span>
           </div>
         </div>
       </aside>
