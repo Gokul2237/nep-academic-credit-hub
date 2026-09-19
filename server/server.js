@@ -286,7 +286,7 @@ connectDB()
 // START SERVER
 // ============================================================
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && require.main === module) {
   app.listen(PORT, () => {
     console.log(
       `🚀 NEP Academic Hub Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`
