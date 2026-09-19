@@ -31,6 +31,10 @@ const creditRoutes = require('./routes/creditRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const transferRoutes = require('./routes/transferRoutes');
 const certificateRoutes = require('./routes/certificateRoutes');
+const transcriptRoutes = require('./routes/transcriptRoutes');
+const eligibilityRoutes = require('./routes/eligibilityRoutes');
+const recommendationRoutes = require('./routes/recommendationRoutes');
+const gatewayRoutes = require('./routes/gatewayRoutes');
 // ============================================================
 // ADMIN BOOTSTRAP
 // ============================================================
@@ -160,6 +164,8 @@ app.use(
 );
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
+app.use('/api/transcripts', transcriptRoutes);
+app.use('/api/v1/transcripts', transcriptRoutes);
  app.use(
   '/api/v1/transfers',
   transferRoutes
@@ -224,25 +230,18 @@ app.use(
  *
  */
 
-app.use(
-  '/api/students',
-  studentRoutes
-);
+app.use('/api/students', studentRoutes);
+app.use('/api/v1/students', studentRoutes);
+app.use('/api/users/students', studentRoutes);
+app.use('/api/v1/users/students', studentRoutes);
 
-app.use(
-  '/api/v1/students',
-  studentRoutes
-);
+app.use('/api/eligibility', eligibilityRoutes);
+app.use('/api/v1/eligibility', eligibilityRoutes);
 
-app.use(
-  '/api/users/students',
-  studentRoutes
-);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/v1/recommendations', recommendationRoutes);
 
-app.use(
-  '/api/v1/users/students',
-  studentRoutes
-);
+app.use('/api/gateway', gatewayRoutes);
 
 // ============================================================
 // ERROR HANDLING

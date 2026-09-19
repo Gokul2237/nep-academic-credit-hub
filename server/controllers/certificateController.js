@@ -9,6 +9,13 @@ const Institution = require('../models/Institution');
 
 const ApiResponse = require('../utils/apiResponse');
 
+const extractIdString = (val) => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (val._id) return val._id.toString();
+  return val.toString();
+};
+
 /**
  * Generate deterministic SHA-256 hash for a certificate.
  * The hash is based on the certificate's academic references
@@ -27,10 +34,10 @@ const generateCertificateHash = ({
   const payload =
     `NEP-CERTIFICATE-INTEGRITY::` +
     `certificate=${certificateId}|` +
-    `student=${studentId}|` +
-    `institution=${institutionId}|` +
-    `course=${courseId}|` +
-    `credit=${academicCreditId}|` +
+    `student=${extractIdString(studentId)}|` +
+    `institution=${extractIdString(institutionId)}|` +
+    `course=${extractIdString(courseId)}|` +
+    `credit=${extractIdString(academicCreditId)}|` +
     `title=${String(title || '').trim()}|` +
     `type=${String(certificateType || '').trim()}|` +
     `issueDate=${new Date(issueDate).toISOString()}`;
@@ -152,8 +159,17 @@ const createCertificate = async (req, res) => {
         );
       }
     } else if (req.user.role === ROLES.ADMIN) {
-      issuingInstitutionId =
-        req.body.institutionId || credit.institutionId;
+      if (
+        req.body.institutionId &&
+        req.body.institutionId.toString() !== credit.institutionId.toString()
+      ) {
+        return ApiResponse.error(
+          res,
+          'Issuing institution must match the academic credit institution.',
+          400
+        );
+      }
+      issuingInstitutionId = credit.institutionId;
     } else {
       return ApiResponse.error(
         res,

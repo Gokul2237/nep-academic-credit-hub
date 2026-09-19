@@ -13,8 +13,13 @@ const {
 const { authenticate } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
+const { validateCreditPayload } = require('../controllers/validationController');
+
 // All credit routes require authenticated user
 router.use(authenticate);
+
+// Validation tool
+router.post('/validate', authorize('institution', 'admin'), validateCreditPayload);
 
 // Student Specific Summaries
 router.get('/wallet-summary', getWalletSummary);

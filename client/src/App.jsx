@@ -27,6 +27,11 @@ import StudentTimelinePage from './pages/student/StudentTimelinePage';
 import StudentTransferPage from './pages/student/StudentTransferPage';
 import StudentPassportPage from './pages/student/StudentPassportPage';
 import StudentTranscriptPage from './pages/student/StudentTranscriptPage';
+import StudentCertificatesPage from './pages/student/StudentCertificatesPage';
+import StudentEligibilityPage from './pages/student/StudentEligibilityPage';
+import StudentPathwayPage from './pages/student/StudentPathwayPage';
+import StudentRecommendationsPage from './pages/student/StudentRecommendationsPage';
+import StudentSimulatorPage from './pages/student/StudentSimulatorPage';
 
 // Institution Views
 import InstitutionDashboard from './pages/institution/InstitutionDashboard';
@@ -34,6 +39,9 @@ import InstitutionCoursesPage from './pages/institution/InstitutionCoursesPage';
 import InstitutionCreditsPage from './pages/institution/InstitutionCreditsPage';
 import InstitutionStudentsPage from './pages/institution/InstitutionStudentsPage';
 import InstitutionTransfersPage from './pages/institution/InstitutionTransfersPage';
+import InstitutionCertificatesPage from './pages/institution/InstitutionCertificatesPage';
+import InstitutionApiGatewayPage from './pages/institution/InstitutionApiGatewayPage';
+import InstitutionPoliciesPage from './pages/institution/InstitutionPoliciesPage';
 
 // Admin Views
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -41,6 +49,11 @@ import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 import AdminCreditsPage from './pages/admin/AdminCreditsPage';
 import AdminStudentsPage from './pages/admin/AdminStudentsPage';
 import AdminTransfersPage from './pages/admin/AdminTransfersPage';
+import AdminCertificatesPage from './pages/admin/AdminCertificatesPage';
+import AdminInstitutionsPage from './pages/admin/AdminInstitutionsPage';
+import AdminApiMonitoringPage from './pages/admin/AdminApiMonitoringPage';
+import AdminAuditLogsPage from './pages/admin/AdminAuditLogsPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 
 // Placeholder Component for Future Phases
 import PlaceholderPage from './components/common/PlaceholderPage';
@@ -452,73 +465,31 @@ export default function App() {
               element={<StudentTranscriptPage />}
             />
 
-
-            {/* Phase 6 */}
             <Route
               path="eligibility"
-              element={
-                <PlaceholderPage
-                  title="NEP Eligibility Tracker"
-                  description="Real-time evaluation of earned credits against selected academic program requirements."
-                  phase="Phase 6"
-                />
-              }
+              element={<StudentEligibilityPage />}
             />
 
-
-            {/* Phase 6 */}
             <Route
               path="pathway"
-              element={
-                <PlaceholderPage
-                  title="Academic Pathway Planner"
-                  description="Visual roadmap of completed, pending, and locked core/elective academic requirements."
-                  phase="Phase 6"
-                />
-              }
+              element={<StudentPathwayPage />}
             />
 
-
-            {/* Phase 6 */}
             <Route
               path="recommendations"
-              element={
-                <PlaceholderPage
-                  title="Course Recommendations"
-                  description="AI-driven course suggestions based on requirement gaps, prerequisites, and selected pathway."
-                  phase="Phase 6"
-                />
-              }
+              element={<StudentRecommendationsPage />}
             />
 
-
-            {/* Phase 5 */}
             <Route
               path="simulator"
-              element={
-                <PlaceholderPage
-                  title="Credit Transfer Simulator"
-                  description="Pre-evaluate potential credit transfer against destination university acceptance policies."
-                  phase="Phase 5"
-                />
-              }
+              element={<StudentSimulatorPage />}
             />
 
-
-            {/* Phase 6 */}
             <Route
               path="certificates"
-              element={
-                <PlaceholderPage
-                  title="Certificates & Micro-Credentials"
-                  description="Verified digital micro-credentials and skill badges issued by accredited institutions."
-                  phase="Phase 6"
-                />
-              }
+              element={<StudentCertificatesPage />}
             />
 
-
-            {/* Phase 3 */}
             <Route
               path="profile"
               element={
@@ -561,7 +532,6 @@ export default function App() {
               element={<InstitutionDashboard />}
             />
 
-            {/* Phase 4 */}
             <Route
               path="students"
               element={<InstitutionStudentsPage />}
@@ -577,101 +547,44 @@ export default function App() {
               element={<InstitutionCreditsPage />}
             />
 
-            {/* Phase 4 */}
             <Route
               path="transfers"
               element={<InstitutionTransfersPage />}
             />
 
-
-            {/* Phase 4 */}
             <Route
               path="policies"
-              element={
-                <PlaceholderPage
-                  title="Credit Acceptance Policies"
-                  description="Define institutional criteria for external credit transfers (equivalency %, limits, labs)."
-                  phase="Phase 4"
-                />
-              }
+              element={<InstitutionPoliciesPage />}
             />
 
-
-            {/* Phase 4 */}
             <Route
               path="policy-versions"
-              element={
-                <PlaceholderPage
-                  title="Policy Versions & Diffs"
-                  description="Immutable version history (v1.0, v2.0) tracking rationale and date of policy changes."
-                  phase="Phase 4"
-                />
-              }
+              element={<InstitutionPoliciesPage />}
             />
 
-
-            {/* Phase 7 */}
             <Route
               path="api-gateway"
-              element={
-                <PlaceholderPage
-                  title="B2B REST API Gateway"
-                  description="Machine-to-machine inter-institutional authentication and credit verification endpoints."
-                  phase="Phase 7"
-                />
-              }
+              element={<InstitutionApiGatewayPage />}
             />
 
-
-            {/* Phase 7 */}
             <Route
               path="api-keys"
-              element={
-                <PlaceholderPage
-                  title="API Key Management"
-                  description="Generate, scope permissions, and rotate cryptographically hashed API keys."
-                  phase="Phase 7"
-                />
-              }
+              element={<InstitutionApiGatewayPage />}
             />
 
-
-            {/* Phase 7 */}
             <Route
               path="api-logs"
-              element={
-                <PlaceholderPage
-                  title="Live API Telemetry Logs"
-                  description="Real-time telemetry of incoming/outgoing B2B Gateway requests and latency."
-                  phase="Phase 7"
-                />
-              }
+              element={<InstitutionApiGatewayPage />}
             />
 
-
-            {/* Phase 5 */}
             <Route
               path="decisions"
-              element={
-                <PlaceholderPage
-                  title="Transfer Decisions & Officer Sign-off"
-                  description="Explainable transfer evaluation reports with official academic board sign-off."
-                  phase="Phase 5"
-                />
-              }
+              element={<InstitutionTransfersPage />}
             />
 
-
-            {/* Phase 6 */}
             <Route
               path="verify-certificates"
-              element={
-                <PlaceholderPage
-                  title="Certificate Verification"
-                  description="Validate authenticity of certificates and diplomas using SHA-256 digital seals."
-                  phase="Phase 6"
-                />
-              }
+              element={<InstitutionCertificatesPage />}
             />
 
           </Route>
@@ -705,25 +618,15 @@ export default function App() {
               element={<AdminDashboard />}
             />
 
-            {/* Phase 4 */}
             <Route
               path="students"
               element={<AdminStudentsPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="institutions"
-              element={
-                <PlaceholderPage
-                  title="Institution Governance & Verification"
-                  description="Review and verify participating university accreditations (NAAC/NIRF credentials)."
-                  phase="Phase 8"
-                />
-              }
+              element={<AdminInstitutionsPage />}
             />
-
 
             <Route
               path="courses"
@@ -735,76 +638,34 @@ export default function App() {
               element={<AdminCreditsPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="certificates"
-              element={
-                <PlaceholderPage
-                  title="Certificate Registry"
-                  description="National registry of verified academic degrees, diplomas, and micro-credentials."
-                  phase="Phase 8"
-                />
-              }
+              element={<AdminCertificatesPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="policies"
-              element={
-                <PlaceholderPage
-                  title="Policy Compliance Monitoring"
-                  description="Monitor active university transfer policies against national NEP guidelines."
-                  phase="Phase 8"
-                />
-              }
+              element={<InstitutionPoliciesPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="api-monitoring"
-              element={
-                <PlaceholderPage
-                  title="API Gateway Telemetry & Health"
-                  description="Platform-wide traffic volume, latency, error rates, and security telemetry."
-                  phase="Phase 8"
-                />
-              }
+              element={<AdminApiMonitoringPage />}
             />
 
-
-            {/* Phase 4 */}
             <Route
               path="transfers"
               element={<AdminTransfersPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="audit-logs"
-              element={
-                <PlaceholderPage
-                  title="Immutable Audit Trail Explorer"
-                  description="Searchable security audit log of all system state modifications."
-                  phase="Phase 8"
-                />
-              }
+              element={<AdminAuditLogsPage />}
             />
 
-
-            {/* Phase 8 */}
             <Route
               path="analytics"
-              element={
-                <PlaceholderPage
-                  title="System-Wide Analytics & Metrics"
-                  description="Macro-level trends, credit mobility stats, and institutional adoption metrics."
-                  phase="Phase 8"
-                />
-              }
+              element={<AdminAnalyticsPage />}
             />
 
           </Route>
