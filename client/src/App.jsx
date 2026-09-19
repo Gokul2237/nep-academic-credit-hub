@@ -32,6 +32,7 @@ import StudentEligibilityPage from './pages/student/StudentEligibilityPage';
 import StudentPathwayPage from './pages/student/StudentPathwayPage';
 import StudentRecommendationsPage from './pages/student/StudentRecommendationsPage';
 import StudentSimulatorPage from './pages/student/StudentSimulatorPage';
+import StudentProfilePage from './pages/student/StudentProfilePage';
 
 // Institution Views
 import InstitutionDashboard from './pages/institution/InstitutionDashboard';
@@ -41,7 +42,10 @@ import InstitutionStudentsPage from './pages/institution/InstitutionStudentsPage
 import InstitutionTransfersPage from './pages/institution/InstitutionTransfersPage';
 import InstitutionCertificatesPage from './pages/institution/InstitutionCertificatesPage';
 import InstitutionApiGatewayPage from './pages/institution/InstitutionApiGatewayPage';
+import InstitutionApiKeysPage from './pages/institution/InstitutionApiKeysPage';
+import InstitutionApiLogsPage from './pages/institution/InstitutionApiLogsPage';
 import InstitutionPoliciesPage from './pages/institution/InstitutionPoliciesPage';
+
 
 // Admin Views
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -492,13 +496,7 @@ export default function App() {
 
             <Route
               path="profile"
-              element={
-                <PlaceholderPage
-                  title="Student Profile & ABC Identity"
-                  description="Manage your national Academic Bank of Credits (ABC) ID and institutional affiliations."
-                  phase="Phase 3"
-                />
-              }
+              element={<StudentProfilePage />}
             />
 
           </Route>
@@ -569,13 +567,14 @@ export default function App() {
 
             <Route
               path="api-keys"
-              element={<InstitutionApiGatewayPage />}
+              element={<InstitutionApiKeysPage />}
             />
 
             <Route
               path="api-logs"
-              element={<InstitutionApiGatewayPage />}
+              element={<InstitutionApiLogsPage />}
             />
+
 
             <Route
               path="decisions"

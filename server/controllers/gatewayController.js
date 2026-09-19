@@ -334,13 +334,82 @@ const gatewayReadStudents = async (req, res) => {
   }
 };
 
+const getGatewayInfo = async (req, res) => {
+  try {
+    const institutionId = req.user.role === ROLES.INSTITUTION ? req.user.institutionId : req.query.institutionId;
+
+    let activeKeysCount = 0;
+    if (institutionId) {
+      activeKeysCount = await APIKey.countDocuments({ institutionId, isActive: true });
+    } else {
+      activeKeysCount = await APIKey.countDocuments({ isActive: true });
+    }
+
+    return ApiResponse.success(
+      res,
+      {
+        gatewayStatus: 'ONLINE',
+        apiVersion: 'v1',
+        baseUrl: `${req.protocol}://${req.get('host')}/api/v1/gateway`,
+        authHeader: 'X-API-Key: nep_live_...',
+        activeKeysCount,
+        supportedScopes: [
+          { scope: 'read:credits', description: 'Query credit records belonging to institution students' },
+          { scope: 'submit:credits', description: 'Award academic credits programmatically' },
+          { scope: 'verify:certificates', description: 'Verify certificate authenticity seals' },
+          { scope: 'read:students', description: 'Retrieve institution student roster' },
+        ],
+        endpoints: [
+          { method: 'GET', path: '/api/v1/gateway/credits', scope: 'read:credits', description: 'Read student credit ledger' },
+          { method: 'POST', path: '/api/v1/gateway/credits', scope: 'submit:credits', description: 'Award academic credit' },
+          { method: 'POST', path: '/api/v1/gateway/certificates/verify', scope: 'verify:certificates', description: 'Verify certificate seal' },
+          { method: 'GET', path: '/api/v1/gateway/students', scope: 'read:students', description: 'Fetch student roster' },
+        ],
+      },
+      'API Gateway overview retrieved successfully.'
+    );
+  } catch (error) {
+    console.error('Get Gateway Info Error:', error);
+    return ApiResponse.error(res, 'Failed to fetch gateway overview info.', 500);
+  }
+};
+
+/**
+ * Fetch System Audit Logs (Admin)
+ * GET /api/gateway/audit-logs
+ */
+const getAuditLogs = async (req, res) => {
+  try {
+    const query = {};
+    if (req.user.role === ROLES.INSTITUTION) {
+      query.institutionId = req.user.institutionId;
+    } else if (req.user.role === ROLES.ADMIN && req.query.institutionId) {
+      query.institutionId = req.query.institutionId;
+    }
+
+    const auditLogs = await AuditLog.find(query)
+      .populate('userId', 'name email role')
+      .populate('institutionId', 'name code')
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    return ApiResponse.success(res, auditLogs, 'System audit logs retrieved successfully.');
+  } catch (error) {
+    console.error('Get Audit Logs Error:', error);
+    return ApiResponse.error(res, 'Failed to fetch audit logs.', 500);
+  }
+};
+
 module.exports = {
+  getGatewayInfo,
   generateApiKey,
   getApiKeys,
   revokeApiKey,
   getApiLogs,
+  getAuditLogs,
   gatewayReadCredits,
   gatewaySubmitCredit,
   gatewayVerifyCertificate,
   gatewayReadStudents,
 };
+

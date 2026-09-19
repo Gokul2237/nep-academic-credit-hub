@@ -40,22 +40,42 @@ const StudentPassportPage = () => {
         certificateService.getCertificates(),
       ]);
 
-      setWallet(walletResponse.data?.data || walletResponse.data);
-      const timelineData =
-  timelineResponse.data?.data ||
-  timelineResponse.data ||
-  {};
+      const walletData = walletResponse.data?.data || walletResponse.data;
+      setWallet(walletData);
 
-setTimeline(
-  Array.isArray(timelineData)
-    ? timelineData
-    : Object.values(timelineData)
-);
+      const timelineRaw =
+        timelineResponse.data?.data ||
+        timelineResponse.data ||
+        {};
+
+      const flattenTimelineData = (data) => {
+        if (Array.isArray(data)) return data;
+        if (!data || typeof data !== 'object') return [];
+        const records = [];
+        Object.values(data).forEach((yearObj) => {
+          if (yearObj && typeof yearObj === 'object') {
+            if (Array.isArray(yearObj.records)) {
+              records.push(...yearObj.records);
+            } else if (yearObj.semesters && typeof yearObj.semesters === 'object') {
+              Object.values(yearObj.semesters).forEach((semObj) => {
+                if (semObj && Array.isArray(semObj.records)) {
+                  records.push(...semObj.records);
+                }
+              });
+            }
+          }
+        });
+        return records.length > 0 ? records : (walletData?.credits || []);
+      };
+
+      setTimeline(flattenTimelineData(timelineRaw));
+
       setCertificates(
         certificateResponse.data?.data ||
           certificateResponse.data ||
           []
       );
+
     } catch (err) {
       console.error('Passport loading error:', err);
 

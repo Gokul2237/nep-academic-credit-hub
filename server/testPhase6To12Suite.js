@@ -290,7 +290,9 @@ async function runFullSuite() {
     console.log('==============================================');
     console.log('🎉 ALL PHASE 6-12 BACKEND TESTS PASSED SUCCESSFULLY!');
     console.log('==============================================\n');
+    process.exit(0);
   } catch (err) {
+
     console.error('\n❌ FULL SUITE TEST FAILED:', err.message);
     process.exit(1);
   }

@@ -242,6 +242,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/v1/recommendations', recommendationRoutes);
 
 app.use('/api/gateway', gatewayRoutes);
+app.use('/api/v1/gateway', gatewayRoutes);
 
 // ============================================================
 // ERROR HANDLING

@@ -399,10 +399,14 @@ const login = async (req, res) => {
  */
 const getMe = async (req, res) => {
   try {
+    const user = await User.findById(req.user._id)
+      .select('-passwordHash')
+      .populate('institutionId', 'name code type contactEmail');
+
     return ApiResponse.success(
       res,
       {
-        user: req.user,
+        user: user || req.user,
       },
       'User profile retrieved successfully'
     );
