@@ -431,12 +431,36 @@ const getMe = async (req, res) => {
  */
 const getInstitutions = async (req, res) => {
   try {
-    const institutions = await Institution.find({
-      verificationStatus: 'VERIFIED',
-      isActive: true,
-    })
-      .select('_id name code type')
-      .sort({ name: 1 });
+    const query = {};
+    if (!req.user || req.user.role !== ROLES.ADMIN) {
+      if (req.query.all !== 'true') {
+        query.verificationStatus = 'VERIFIED';
+        query.isActive = true;
+      }
+    }
+
+    const rawInstitutions = await Institution.find(query)
+      .select('_id name code type contactEmail naacAccreditation nirfRank verificationStatus isActive createdAt')
+      .sort({ name: 1 })
+      .lean();
+
+    // Aggregate student counts per institution
+    const studentCounts = await User.aggregate([
+      { $match: { role: ROLES.STUDENT, isActive: true } },
+      { $group: { _id: '$institutionId', count: { $sum: 1 } } },
+    ]);
+
+    const countMap = {};
+    studentCounts.forEach((sc) => {
+      if (sc._id) {
+        countMap[sc._id.toString()] = sc.count;
+      }
+    });
+
+    const institutions = rawInstitutions.map((inst) => ({
+      ...inst,
+      studentCount: countMap[inst._id.toString()] || 0,
+    }));
 
     return ApiResponse.success(
       res,

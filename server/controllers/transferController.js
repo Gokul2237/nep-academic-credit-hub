@@ -3,6 +3,7 @@ const { TransferRequest } = require('../models/TransferRequest');
 const { AcademicCredit } = require('../models/AcademicCredit');
 const { User, ROLES } = require('../models/User');
 const Institution = require('../models/Institution');
+const AuditLog = require('../models/AuditLog');
 const ApiResponse = require('../utils/apiResponse');
 
 /**
@@ -18,6 +19,15 @@ const createTransfer = async (req, res) => {
     let studentId = req.user._id;
     if (req.user.role === 'admin' && req.body.studentId) {
       studentId = req.body.studentId;
+    } else if (req.user.role === 'institution') {
+      if (!req.body.studentId) {
+        return ApiResponse.error(
+          res,
+          'Non-student account must specify a valid enrolled student.',
+          403
+        );
+      }
+      studentId = req.body.studentId;
     }
 
     const student = await User.findById(studentId);
@@ -30,6 +40,18 @@ const createTransfer = async (req, res) => {
         res,
         'Student is not enrolled or associated with any home institution.',
         400
+      );
+    }
+
+    // STRICT TENANT ISOLATION: Institution can only initiate transfers for their enrolled students
+    if (
+      req.user.role === 'institution' &&
+      student.institutionId.toString() !== req.user.institutionId.toString()
+    ) {
+      return ApiResponse.error(
+        res,
+        'Access denied: You can only initiate credit transfers for students enrolled in your institution.',
+        403
       );
     }
 
@@ -112,6 +134,14 @@ const createTransfer = async (req, res) => {
         );
       }
 
+      if (credit.isTransferred) {
+        return ApiResponse.error(
+          res,
+          `Credit for course ID ${credit.courseId} has already been transferred to another institution.`,
+          409
+        );
+      }
+
       totalCredits += credit.credits;
     }
 
@@ -185,6 +215,9 @@ const getTransfers = async (req, res) => {
 
       if (type === 'outgoing') {
         query.sourceInstitutionId = instId;
+      } else if (type === 'history') {
+        query.$or = [{ destinationInstitutionId: instId }, { sourceInstitutionId: instId }];
+        query.status = { $in: ['APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED'] };
       } else if (type === 'all') {
         query.$or = [{ destinationInstitutionId: instId }, { sourceInstitutionId: instId }];
       } else {
@@ -345,6 +378,14 @@ const reviewTransfer = async (req, res) => {
       );
     }
 
+    if (targetStatus === 'REJECTED' && !rejectionReason?.trim()) {
+      return ApiResponse.error(
+        res,
+        'Rejection reason is required when rejecting a transfer request.',
+        400
+      );
+    }
+
     transfer.status = targetStatus;
     if (remarks) transfer.remarks = remarks.trim();
     if (rejectionReason) transfer.rejectionReason = rejectionReason.trim();
@@ -355,6 +396,40 @@ const reviewTransfer = async (req, res) => {
     }
 
     await transfer.save();
+
+    // ON APPROVAL: Safely update credit records and prevent duplicate transfers
+    if (targetStatus === 'APPROVED') {
+      await AcademicCredit.updateMany(
+        { _id: { $in: transfer.creditIds } },
+        {
+          $set: {
+            isTransferred: true,
+            transferredTo: transfer.destinationInstitutionId,
+            transferRequestId: transfer._id,
+            transferredAt: new Date(),
+          },
+        }
+      );
+    }
+
+    // Record Immutable Audit Log
+    AuditLog.create({
+      logId: `LOG-TR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: req.user._id,
+      institutionId: req.user.institutionId || transfer.destinationInstitutionId,
+      action: `TRANSFER_${targetStatus}`,
+      resource: `TransferRequest:${transfer._id}`,
+      details: {
+        transferId: transfer._id,
+        studentId: transfer.studentId,
+        sourceInstitutionId: transfer.sourceInstitutionId,
+        destinationInstitutionId: transfer.destinationInstitutionId,
+        status: targetStatus,
+        remarks: transfer.remarks,
+        rejectionReason: transfer.rejectionReason,
+      },
+      ipAddress: req.ip || '127.0.0.1',
+    }).catch((e) => console.error('AuditLog error in reviewTransfer:', e.message));
 
     const updatedTransfer = await TransferRequest.findById(transfer._id)
       .populate('studentId', 'name email studentId')

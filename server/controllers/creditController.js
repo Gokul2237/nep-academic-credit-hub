@@ -181,8 +181,8 @@ const getCredits = async (req, res) => {
       // Students can strictly only view their own credits
       query.studentId = req.user._id;
     } else if (req.user.role === 'institution') {
-      // Institutions can only view credits they issued (or search by their institution)
-      query.institutionId = req.user.institutionId;
+      // Institutions can view credits they issued or credits transferred to them
+      query.$or = [{ institutionId: req.user.institutionId }, { transferredTo: req.user.institutionId }];
       if (studentId) query.studentId = studentId;
     } else if (req.user.role === 'admin') {
       // Admin has full search capability
@@ -243,7 +243,8 @@ const getCreditById = async (req, res) => {
 
     if (
       req.user.role === 'institution' &&
-      credit.institutionId._id.toString() !== req.user.institutionId.toString()
+      credit.institutionId._id.toString() !== req.user.institutionId.toString() &&
+      credit.transferredTo?.toString() !== req.user.institutionId.toString()
     ) {
       return ApiResponse.error(
         res,

@@ -20,7 +20,7 @@ router.get('/stats', getTransferStats);
 
 // General Query & Creation
 router.get('/', getTransfers);
-router.post('/', authorize('student', 'admin'), createTransfer);
+router.post('/', authorize('student', 'institution', 'admin'), createTransfer);
 
 // Single Record Details
 router.get('/:id', getTransferById);

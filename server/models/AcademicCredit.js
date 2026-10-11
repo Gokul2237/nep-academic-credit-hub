@@ -90,6 +90,26 @@ const academicCreditSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isTransferred: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    transferredTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Institution',
+      default: null,
+      index: true,
+    },
+    transferRequestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TransferRequest',
+      default: null,
+    },
+    transferredAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

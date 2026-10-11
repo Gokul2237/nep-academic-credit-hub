@@ -41,7 +41,8 @@ export default function AdminAnalyticsPage() {
 
       const credits = creditsRes.data?.data || creditsRes.data || [];
       const students = studentsRes.data?.data || studentsRes.data || [];
-      const institutions = instRes.data?.data || instRes.data || [];
+      const rawInst = instRes.data?.institutions || instRes.institutions || (Array.isArray(instRes.data) ? instRes.data : (Array.isArray(instRes) ? instRes : []));
+      const institutions = Array.isArray(rawInst) ? rawInst : [];
       const certs = certsRes.data?.data || certsRes.data || [];
 
       // Process chart data

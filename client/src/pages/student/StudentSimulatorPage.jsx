@@ -32,9 +32,9 @@ export default function StudentSimulatorPage() {
         api.get('/auth/institutions'),
       ]);
       const crd = credRes.data?.data || credRes.data || [];
-      const inst = instRes.data?.data || instRes.data || [];
+      const rawInst = instRes.data?.institutions || instRes.institutions || (Array.isArray(instRes.data) ? instRes.data : (Array.isArray(instRes) ? instRes : []));
       setCredits(Array.isArray(crd) ? crd : []);
-      setInstitutions(Array.isArray(inst) ? inst : []);
+      setInstitutions(Array.isArray(rawInst) ? rawInst : []);
     } catch (err) {
       console.error('Simulator load error:', err);
     } finally {

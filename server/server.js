@@ -35,6 +35,8 @@ const transcriptRoutes = require('./routes/transcriptRoutes');
 const eligibilityRoutes = require('./routes/eligibilityRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const gatewayRoutes = require('./routes/gatewayRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const institutionRoutes = require('./routes/institutionRoutes');
 // ============================================================
 // ADMIN BOOTSTRAP
 // ============================================================
@@ -243,6 +245,12 @@ app.use('/api/v1/recommendations', recommendationRoutes);
 
 app.use('/api/gateway', gatewayRoutes);
 app.use('/api/v1/gateway', gatewayRoutes);
+
+app.use('/api/admin', adminRoutes);
+app.use('/api/v1/admin', adminRoutes);
+
+app.use('/api/institution', institutionRoutes);
+app.use('/api/v1/institution', institutionRoutes);
 
 // ============================================================
 // ERROR HANDLING

@@ -46,7 +46,8 @@ export const authService = {
   // Get verified institutions for student registration
   getInstitutions: async () => {
     const response = await api.get('/auth/institutions');
-    return response.data?.institutions || response.institutions || [];
+    const list = response.data?.institutions || response.institutions || (Array.isArray(response.data) ? response.data : (Array.isArray(response) ? response : []));
+    return Array.isArray(list) ? list : [];
   },
 
   // Get locally cached token

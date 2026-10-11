@@ -108,7 +108,7 @@ const institutionNavItems = [
     icon: GraduationCap,
   },
   {
-    name: 'Transfer Requests',
+    name: 'Credit Transfer Requests',
     path: '/institution/transfers',
     icon: ArrowRightLeft,
   },
