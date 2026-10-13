@@ -2,7 +2,7 @@ import React from 'react';
 import { Sparkles, Construction, Layers, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function PlaceholderPage({ title, description, phase = 'Phase 3' }) {
+export default function PlaceholderPage({ title, description, moduleName = 'Platform' }) {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -11,7 +11,7 @@ export default function PlaceholderPage({ title, description, phase = 'Phase 3' 
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[11px] font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Foundation Active — {phase} Module</span>
+              <span>Foundation Active — {moduleName} Module</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-100">{title}</h1>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">{description}</p>
@@ -19,7 +19,7 @@ export default function PlaceholderPage({ title, description, phase = 'Phase 3' 
 
           <div className="flex items-center space-x-3">
             <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 font-mono">
-              Status: Ready for Implementation
+              Status: Active Platform Module
             </span>
           </div>
         </div>
@@ -34,7 +34,7 @@ export default function PlaceholderPage({ title, description, phase = 'Phase 3' 
           {title} Interface
         </h3>
         <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
-          The routing, RBAC protection, layout scaffolding, and API clients for this section are established. Real data integrations will activate in {phase}.
+          The routing, RBAC protection, and layout scaffolding for this section are established and secured under platform governance policies.
         </p>
 
         <div className="mt-6 flex items-center space-x-3">

@@ -8,6 +8,7 @@ const { TransferRequest } = require('../models/TransferRequest');
 const APIKey = require('../models/APIKey');
 const APILog = require('../models/APILog');
 const AuditLog = require('../models/AuditLog');
+const CreditPolicy = require('../models/CreditPolicy');
 const ApiResponse = require('../utils/apiResponse');
 
 /**
@@ -271,6 +272,200 @@ const getInstitutionOverview = async (req, res) => {
   }
 };
 
+/**
+ * Get active credit acceptance policy and version history
+ * GET /api/institution/policies
+ * Access: Institution, Admin
+ */
+const getInstitutionPolicy = async (req, res) => {
+  try {
+    let institutionId = null;
+
+    if (req.user.role === ROLES.INSTITUTION) {
+      institutionId = req.user.institutionId;
+    } else if (req.user.role === ROLES.ADMIN) {
+      institutionId = req.query.institutionId || req.user.institutionId;
+    }
+
+    if (!institutionId) {
+      return ApiResponse.error(
+        res,
+        'Institution context is required to retrieve credit policy.',
+        400
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(institutionId)) {
+      return ApiResponse.error(res, 'Invalid Institution ID.', 400);
+    }
+
+    const policy = await CreditPolicy.getEffectivePolicy(institutionId);
+
+    return ApiResponse.success(
+      res,
+      policy,
+      'Institutional credit acceptance policy retrieved successfully'
+    );
+  } catch (error) {
+    console.error('getInstitutionPolicy Error:', error);
+    return ApiResponse.error(
+      res,
+      'Failed to retrieve credit acceptance policy',
+      500,
+      error.message
+    );
+  }
+};
+
+/**
+ * Update credit acceptance policy and publish new version
+ * PUT /api/institution/policies
+ * Access: Institution (own node only), Admin
+ */
+const updateInstitutionPolicy = async (req, res) => {
+  try {
+    let institutionId = null;
+
+    if (req.user.role === ROLES.INSTITUTION) {
+      institutionId = req.user.institutionId;
+    } else if (req.user.role === ROLES.ADMIN) {
+      institutionId = req.body.institutionId || req.user.institutionId;
+    }
+
+    if (!institutionId) {
+      return ApiResponse.error(
+        res,
+        'Institution context is required to configure credit policy.',
+        400
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(institutionId)) {
+      return ApiResponse.error(res, 'Invalid Institution ID.', 400);
+    }
+
+    const { minGrade, minEquivalency, maxCredits, version, description } = req.body;
+
+    // Server-side validation
+    const validGrades = ['O', 'A+', 'A', 'B+', 'B', 'C', 'P'];
+    if (minGrade && !validGrades.includes(minGrade.toUpperCase())) {
+      return ApiResponse.error(
+        res,
+        `Invalid minimum grade. Allowed grades: ${validGrades.join(', ')}`,
+        400
+      );
+    }
+
+    const numEquiv = Number(minEquivalency);
+    if (minEquivalency !== undefined && (isNaN(numEquiv) || numEquiv < 50 || numEquiv > 100)) {
+      return ApiResponse.error(
+        res,
+        'Minimum equivalency must be a number between 50 and 100.',
+        400
+      );
+    }
+
+    const numMaxCredits = Number(maxCredits);
+    if (maxCredits !== undefined && (isNaN(numMaxCredits) || numMaxCredits < 1 || numMaxCredits > 160)) {
+      return ApiResponse.error(
+        res,
+        'Maximum cumulative transfer credits must be between 1 and 160.',
+        400
+      );
+    }
+
+    let policy = await CreditPolicy.findOne({ institutionId });
+
+    if (!policy) {
+      // First time saving
+      const targetVersion = version?.trim() || 'v1.0';
+      policy = new CreditPolicy({
+        institutionId,
+        version: targetVersion,
+        minGrade: minGrade ? minGrade.toUpperCase() : 'B',
+        minEquivalency: numEquiv || 80,
+        maxCredits: numMaxCredits || 60,
+        updatedBy: req.user._id,
+        policyHistory: [
+          {
+            version: targetVersion,
+            minGrade: minGrade ? minGrade.toUpperCase() : 'B',
+            minEquivalency: numEquiv || 80,
+            maxCredits: numMaxCredits || 60,
+            updatedBy: req.user._id,
+            updatedAt: new Date(),
+            description: description || 'Initial custom credit acceptance policy configuration',
+          },
+        ],
+      });
+    } else {
+      // Archive current version into history before updating
+      policy.policyHistory.push({
+        version: policy.version,
+        minGrade: policy.minGrade,
+        minEquivalency: policy.minEquivalency,
+        maxCredits: policy.maxCredits,
+        updatedBy: policy.updatedBy || req.user._id,
+        updatedAt: policy.updatedAt || new Date(),
+        description: `Archived prior to publishing ${version || 'next'} version`,
+      });
+
+      // Increment or set new version
+      let nextVersion = version?.trim();
+      if (!nextVersion) {
+        const match = policy.version.match(/v?(\d+)(\.(\d+))?/);
+        if (match) {
+          const major = parseInt(match[1], 10);
+          nextVersion = `v${major + 1}.0`;
+        } else {
+          nextVersion = `${policy.version}.1`;
+        }
+      }
+
+      policy.version = nextVersion;
+      if (minGrade) policy.minGrade = minGrade.toUpperCase();
+      if (numEquiv) policy.minEquivalency = numEquiv;
+      if (numMaxCredits) policy.maxCredits = numMaxCredits;
+      policy.updatedBy = req.user._id;
+    }
+
+    await policy.save();
+
+    // Create Immutable Audit Log
+    AuditLog.create({
+      logId: `LOG-POL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: req.user._id,
+      institutionId,
+      action: 'POLICY_VERSION_PUBLISHED',
+      resource: `CreditPolicy:${policy._id}`,
+      details: {
+        institutionId,
+        version: policy.version,
+        minGrade: policy.minGrade,
+        minEquivalency: policy.minEquivalency,
+        maxCredits: policy.maxCredits,
+      },
+      ipAddress: req.ip || '127.0.0.1',
+    }).catch((e) => console.error('AuditLog error in updateInstitutionPolicy:', e.message));
+
+    return ApiResponse.success(
+      res,
+      policy,
+      `Credit acceptance policy (${policy.version}) updated and published successfully`
+    );
+  } catch (error) {
+    console.error('updateInstitutionPolicy Error:', error);
+    return ApiResponse.error(
+      res,
+      'Failed to update credit acceptance policy',
+      500,
+      error.message
+    );
+  }
+};
+
 module.exports = {
   getInstitutionOverview,
+  getInstitutionPolicy,
+  updateInstitutionPolicy,
 };

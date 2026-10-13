@@ -563,11 +563,29 @@ const verifyCertificate = async (req, res) => {
           certificate.verificationStatus,
         revokedAt: certificate.revokedAt,
 
-        student: certificate.studentId,
-        institution: certificate.institutionId,
-        course: certificate.courseId,
-        academicCredit:
-          certificate.academicCreditId,
+        student: {
+          name: certificate.studentId?.name || '',
+          studentId: certificate.studentId?.studentId || '',
+        },
+        institution: {
+          name: certificate.institutionId?.name || '',
+          code: certificate.institutionId?.code || '',
+          type: certificate.institutionId?.type || '',
+        },
+        course: {
+          courseCode: certificate.courseId?.courseCode || '',
+          courseName: certificate.courseId?.courseName || '',
+          credits: certificate.courseId?.credits || 0,
+          department: certificate.courseId?.department || '',
+          courseLevel: certificate.courseId?.courseLevel || '',
+        },
+        academicCredit: {
+          credits: certificate.academicCreditId?.credits || 0,
+          grade: certificate.academicCreditId?.grade || '',
+          semester: certificate.academicCreditId?.semester || '',
+          academicYear: certificate.academicCreditId?.academicYear || '',
+          verificationStatus: certificate.academicCreditId?.verificationStatus || '',
+        },
 
         integrityVerified,
         isValid,

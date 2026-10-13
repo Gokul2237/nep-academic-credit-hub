@@ -365,6 +365,59 @@ export default function InstitutionCreditsPage() {
 
       </div>
 
+      {/* SUMMARY METRICS CARDS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-medium">Total Credit Records</span>
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <GraduationCap className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-slate-100 mt-2">{credits.length}</p>
+          <span className="text-[11px] text-slate-500">Issued course awards</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-medium">Verified Records</span>
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">
+            {credits.filter((c) => c.verificationStatus === 'verified').length}
+          </p>
+          <span className="text-[11px] text-emerald-500/80">Tamper-sealed records</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-medium">Cumulative Credits</span>
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <Hash className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-blue-400 mt-2">
+            {credits.reduce((sum, c) => sum + (Number(c.credits) || 0), 0)}
+          </p>
+          <span className="text-[11px] text-slate-500">Total earned credit value</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-medium">Pending Verification</span>
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-amber-400 mt-2">
+            {credits.filter((c) => c.verificationStatus !== 'verified').length}
+          </p>
+          <span className="text-[11px] text-amber-500/80">Awaiting ledger sign-off</span>
+        </div>
+      </div>
+
       {/* ERROR */}
       {error && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center space-x-2">

@@ -10,6 +10,7 @@ import {
   AlertCircle,
   X,
   CheckCircle2,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function AdminCreditsPage() {
@@ -17,6 +18,8 @@ export default function AdminCreditsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCredit, setSelectedCredit] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchCredits = async () => {
     try {
@@ -36,22 +39,78 @@ export default function AdminCreditsPage() {
     fetchCredits();
   }, []);
 
+  const filteredCredits = credits.filter((c) => {
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    const studentName = (c.studentId?.name || '').toLowerCase();
+    const studentId = (c.studentId?.studentId || c.studentId?.email || '').toLowerCase();
+    const courseCode = (c.courseId?.courseCode || '').toLowerCase();
+    const courseName = (c.courseId?.courseName || '').toLowerCase();
+    const instCode = (c.institutionId?.code || '').toLowerCase();
+    const instName = (c.institutionId?.name || '').toLowerCase();
+
+    return (
+      studentName.includes(q) ||
+      studentId.includes(q) ||
+      courseCode.includes(q) ||
+      courseName.includes(q) ||
+      instCode.includes(q) ||
+      instName.includes(q)
+    );
+  });
+
+  const totalVerified = credits.filter((c) => c.verificationStatus === 'verified').length;
+  const totalCreditUnits = credits.reduce((acc, c) => acc + (c.credits || 0), 0);
+
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-900/60 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[11px] font-semibold mb-2">
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>National Academic Credit Ledger</span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-100">Global Credit Records</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Complete verifiable audit trail of academic credits issued across all authorized universities
-            </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+        <div>
+          <div className="flex items-center space-x-2 text-purple-400 text-xs font-semibold mb-1">
+            <GraduationCap className="w-4 h-4" />
+            <span>National Credit Accumulation Ledger</span>
           </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Credit Ledger</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Centralized verifiable ledger of academic credits awarded across all authorized university nodes.
+          </p>
         </div>
+        <button
+          onClick={fetchCredits}
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center space-x-2 self-start sm:self-center transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>Refresh Ledger</span>
+        </button>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-slate-400 font-medium">Total Credit Awards</div>
+          <div className="text-xl font-bold text-white mt-1 font-mono">{credits.length}</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-emerald-400 font-medium">Verified Records</div>
+          <div className="text-xl font-bold text-emerald-400 mt-1 font-mono">{totalVerified}</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-purple-400 font-medium">Accumulated Credit Units</div>
+          <div className="text-xl font-bold text-purple-400 mt-1 font-mono">{totalCreditUnits}</div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+        <input
+          type="text"
+          placeholder="Search ledger by student, course, or university code..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+        />
       </div>
 
       {error && (
@@ -64,7 +123,10 @@ export default function AdminCreditsPage() {
       {/* Credit Table */}
       <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
         <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-          <h3 className="text-sm font-bold text-slate-100">All Issued Credit Records ({credits.length})</h3>
+          <h3 className="text-sm font-bold text-slate-100">All Issued Credit Records</h3>
+          <span className="text-xs text-slate-400 font-mono">
+            Showing {filteredCredits.length} of {credits.length}
+          </span>
         </div>
 
         {loading ? (
@@ -72,9 +134,9 @@ export default function AdminCreditsPage() {
             <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
             <p className="text-xs text-slate-400">Loading global credit records...</p>
           </div>
-        ) : credits.length === 0 ? (
+        ) : filteredCredits.length === 0 ? (
           <div className="text-center py-12 text-slate-500 text-xs">
-            No credit records recorded on the platform yet.
+            {searchTerm ? 'No credit records match your search filter.' : 'No credit records recorded on the platform yet.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -92,7 +154,7 @@ export default function AdminCreditsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 text-slate-300">
-                {credits.map((c) => (
+                {filteredCredits.map((c) => (
                   <tr key={c._id} className="hover:bg-slate-800/40 transition">
                     <td className="py-3 px-3">
                       <p className="font-semibold text-slate-200">{c.studentId?.name || 'N/A'}</p>

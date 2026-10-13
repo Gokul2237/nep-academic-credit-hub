@@ -84,6 +84,53 @@ export default function AdminDashboard() {
   const pendingInstitutions = data?.pendingInstitutions || [];
   const recentAuditLogs = data?.recentAuditLogs || [];
 
+  const formatAuditAction = (action) => {
+    if (!action) return 'System Activity';
+    const act = String(action).toUpperCase();
+    if (act.includes('GENERATE') && act.includes('KEY')) return 'API key generated';
+    if (act.includes('REVOKE') && act.includes('KEY')) return 'API key revoked';
+    if (act.includes('VERIF') && act.includes('CREDIT')) return 'Credit record verified';
+    if (act.includes('AWARD') && act.includes('CREDIT')) return 'Credit record awarded';
+    if (act.includes('TRANSFER') && act.includes('APPROV')) return 'Transfer request approved';
+    if (act.includes('TRANSFER') && act.includes('REJECT')) return 'Transfer request rejected';
+    if (act.includes('TRANSFER') && act.includes('INIT')) return 'Transfer request initiated';
+    if (act.includes('CERT') && (act.includes('ISSUE') || act.includes('CREATE'))) return 'Certificate issued';
+    if (act.includes('CERT') && act.includes('VERIF')) return 'Certificate verified';
+    if (act.includes('CERT') && act.includes('REVOK')) return 'Certificate revoked';
+    if (act.includes('TRANSCRIPT') && act.includes('GENERATE')) return 'Transcript generated';
+    if (act.includes('POLICY') && (act.includes('UPDATE') || act.includes('PUBLISH'))) return 'Policy updated';
+    if (act.includes('INSTITUTION') && act.includes('VERIF')) return 'Institution verified';
+    if (act.includes('LOGIN')) return 'Administrative sign in';
+
+    return act
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const getActorName = (log) => {
+    if (log.userId?.name) return log.userId.name;
+    if (log.userId?.email) return log.userId.email;
+    if (log.institutionId?.name) return log.institutionId.name;
+    return 'Administrator';
+  };
+
+  const formatAuditTime = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+
+    if (isToday) return `Today, ${timeStr}`;
+    if (isYesterday) return `Yesterday, ${timeStr}`;
+    return `${d.toLocaleDateString([], { day: 'numeric', month: 'short' })}, ${timeStr}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Superadmin Governance Banner */}
@@ -93,11 +140,11 @@ export default function AdminDashboard() {
             <div className="flex items-center space-x-2 mb-2">
               <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[11px] font-semibold flex items-center space-x-1">
                 <Shield className="w-3 h-3" />
-                <span>National ABC Superadmin Control Plane</span>
+                <span>National ABC Governance Control Plane</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-medium flex items-center space-x-1">
                 <Activity className="w-3 h-3" />
-                <span>MongoDB Operational</span>
+                <span>System Operational</span>
               </span>
             </div>
             <h1 className="text-2xl font-bold text-slate-100">
@@ -105,7 +152,7 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-xs text-slate-400 mt-1">
               Admin: <span className="text-purple-300 font-semibold">{user?.email || 'admin@nep.gov.in'}</span> • Active Nodes:{' '}
-              <span className="text-slate-200 font-semibold">{totalInst} Participating Universities</span> • Telemetry:{' '}
+              <span className="text-slate-200 font-semibold">{totalInst} Participating Universities</span> • Status:{' '}
               <span className="text-emerald-400 font-medium">All Services Normal</span>
             </p>
           </div>
@@ -116,14 +163,14 @@ export default function AdminDashboard() {
               className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition flex items-center space-x-2"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh Telemetry</span>
+              <span>Refresh Data</span>
             </button>
             <Link
               to="/admin/analytics"
               className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/20 transition flex items-center space-x-2"
             >
               <Activity className="w-3.5 h-3.5" />
-              <span>Platform Analytics</span>
+              <span>System Analytics</span>
             </Link>
           </div>
         </div>
@@ -232,13 +279,14 @@ export default function AdminDashboard() {
                 <h3 className="text-sm font-bold text-slate-100">
                   Real-Time Platform Audit Stream
                 </h3>
-                <p className="text-xs text-slate-400">Immutable security and state change log</p>
+                <p className="text-xs text-slate-400">Essential security and administrative activity</p>
               </div>
               <Link
                 to="/admin/audit-logs"
-                className="text-xs text-purple-400 hover:text-purple-300 font-medium"
+                className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center space-x-1 transition"
               >
-                Full Log Explorer →
+                <span>View All Activity</span>
+                <span>→</span>
               </Link>
             </div>
 
@@ -248,31 +296,40 @@ export default function AdminDashboard() {
               </div>
             ) : recentAuditLogs.length === 0 ? (
               <div className="p-8 text-center text-slate-500 text-xs">
-                No administrative audit events recorded in database yet.
+                No administrative audit events recorded yet.
               </div>
             ) : (
-              <div className="space-y-2.5">
-                {recentAuditLogs.map((log) => (
-                  <div
-                    key={log._id || log.logId}
-                    className="p-3 rounded-xl bg-slate-800/30 border border-slate-800/60 flex items-start justify-between text-xs"
-                  >
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold border bg-indigo-500/10 text-indigo-400 border-indigo-500/30">
-                          {log.action}
-                        </span>
-                        <span className="text-slate-300 text-[11px]">{log.resource}</span>
+              <div className="space-y-3">
+                {recentAuditLogs.slice(0, 5).map((log) => {
+                  const actionLabel = formatAuditAction(log.action);
+                  const actor = getActorName(log);
+                  const time = formatAuditTime(log.createdAt);
+
+                  return (
+                    <div
+                      key={log._id || log.logId}
+                      className="p-3.5 rounded-xl bg-slate-800/40 border border-slate-800 flex items-center justify-between text-xs hover:border-slate-700/80 transition"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0" />
+                          <span className="font-semibold text-slate-200">
+                            {actionLabel}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 pl-4">
+                          By: <span className="text-slate-300 font-medium">{actor}</span>
+                        </p>
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-1">
-                        By {log.userId?.name || log.userId?.email || 'System User'} • IP: <span className="font-mono text-slate-400">{log.ipAddress}</span>
-                      </p>
+
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {time}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono flex-shrink-0 ml-2">
-                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

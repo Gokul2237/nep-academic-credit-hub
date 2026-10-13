@@ -11,12 +11,13 @@ const {
 
 const { authenticate } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
+const { verificationLimiter } = require('../middleware/rateLimitMiddleware');
 
 /*
- * Public verification
+ * Public verification with rate limiting
  * MUST be registered before /:id route
  */
-router.get('/verify/:verificationCode', verifyTranscript);
+router.get('/verify/:verificationCode', verificationLimiter, verifyTranscript);
 
 // Authenticated routes
 router.use(authenticate);

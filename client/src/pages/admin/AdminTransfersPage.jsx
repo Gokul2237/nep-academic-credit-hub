@@ -15,6 +15,7 @@ import {
   Ban,
   BarChart3,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function AdminTransfersPage() {
@@ -118,6 +119,13 @@ export default function AdminTransfersPage() {
             Monitor national credit mobility, evaluation throughput, acceptance rates, and inter-institutional transfer agreements across all accredited universities.
           </p>
         </div>
+        <button
+          onClick={fetchData}
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center space-x-2 self-start md:self-center transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>Refresh Transfers</span>
+        </button>
       </div>
 
       {/* Metrics Row */}

@@ -39,9 +39,39 @@ export default function InstitutionCertificatesPage() {
   const [reason, setReason] = useState('');
   const [submittingAction, setSubmittingAction] = useState(false);
 
+  // Certificate Authenticity Verification lookup state
+  const [verifyIdInput, setVerifyIdInput] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifyLookupError, setVerifyLookupError] = useState('');
+
   useEffect(() => {
     fetchCertificates();
   }, []);
+
+  const handleVerifyLookup = async (e) => {
+    e?.preventDefault();
+    if (!verifyIdInput.trim()) return;
+
+    try {
+      setVerifying(true);
+      setVerifyLookupError('');
+      setVerifyResult(null);
+
+      const res = await certificateService.verifyCertificate(verifyIdInput.trim());
+      const data = res?.data || res;
+      setVerifyResult(data);
+    } catch (err) {
+      console.error('Verify lookup error:', err);
+      setVerifyLookupError(
+        err.response?.data?.message ||
+          err.message ||
+          'Certificate record not found in the national registry or could not be authenticated.'
+      );
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const fetchCertificates = async () => {
     try {
@@ -178,16 +208,17 @@ export default function InstitutionCertificatesPage() {
             <span>Institutional Credentials Node</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Certificate Management
+            Certificate Management & Verification
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Issue, review, verify, and revoke student completion certificates.
+            Issue completion credentials for verified academic course credits and verify authenticity in the national registry.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 self-start sm:self-center">
           <button
             onClick={fetchCertificates}
             className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700"
+            title="Refresh certificates list"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -215,6 +246,136 @@ export default function InstitutionCertificatesPage() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Certificate Authenticity Verification Tool */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+          <div className="flex items-center space-x-2">
+            <ShieldCheck className="w-5 h-5 text-indigo-400" />
+            <div>
+              <h3 className="text-sm font-bold text-white">Certificate Authenticity Verification</h3>
+              <p className="text-xs text-slate-400">
+                Authenticate any student certificate directly against the tamper-proof registry
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 self-start sm:self-center">
+            SHA-256 Ledger
+          </span>
+        </div>
+
+        <form onSubmit={handleVerifyLookup} className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={verifyIdInput}
+              onChange={(e) => setVerifyIdInput(e.target.value)}
+              placeholder="Enter Certificate ID to verify (e.g., NEP-CERT-MV3TJ5QV-2D003986)..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={verifying || !verifyIdInput.trim()}
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 flex items-center justify-center space-x-2 transition"
+          >
+            {verifying ? (
+              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <ShieldCheck className="w-3.5 h-3.5" />
+            )}
+            <span>Verify Authenticity</span>
+          </button>
+          {(verifyResult || verifyLookupError) && (
+            <button
+              type="button"
+              onClick={() => {
+                setVerifyResult(null);
+                setVerifyLookupError('');
+                setVerifyIdInput('');
+              }}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-medium"
+            >
+              Clear
+            </button>
+          )}
+        </form>
+
+        {/* Verification Result Card */}
+        {verifyLookupError && (
+          <div className="p-4 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs flex items-center space-x-2 font-medium">
+            <XCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+            <span>{verifyLookupError}</span>
+          </div>
+        )}
+
+        {verifyResult && (
+          <div className="p-4 rounded-xl bg-slate-950 border border-indigo-500/30 space-y-3 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-800 gap-2">
+              <div className="flex items-center space-x-2">
+                {verifyResult.isValid && !verifyResult.revokedAt ? (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[11px] flex items-center space-x-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>AUTHENTIC & VERIFIED</span>
+                  </span>
+                ) : verifyResult.revokedAt ? (
+                  <span className="px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold text-[11px] flex items-center space-x-1">
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>REVOKED CREDENTIAL</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[11px] flex items-center space-x-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>PENDING VERIFICATION</span>
+                  </span>
+                )}
+                <span className="font-mono text-slate-300 font-semibold">{verifyResult.certificateId}</span>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                Issued: {new Date(verifyResult.issueDate || verifyResult.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block">Certificate Title</span>
+                <span className="font-semibold text-white block mt-0.5">{verifyResult.title}</span>
+                <span className="text-[10px] text-indigo-400 capitalize block mt-0.5">
+                  {(verifyResult.certificateType || 'course_completion').replace('_', ' ')}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block">Recipient Student</span>
+                <span className="font-semibold text-slate-200 block mt-0.5">
+                  {verifyResult.student?.name || verifyResult.studentId?.name || 'Student'}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                  ID: {verifyResult.student?.studentId || verifyResult.studentId?.studentId || 'N/A'}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block">Awarding Institution</span>
+                <span className="font-semibold text-slate-200 block mt-0.5">
+                  {verifyResult.institution?.name || verifyResult.institutionId?.name || 'University'}
+                </span>
+                <span className="text-[10px] text-indigo-400 font-mono block mt-0.5">
+                  [{verifyResult.institution?.code || verifyResult.institutionId?.code || 'INST'}]
+                </span>
+              </div>
+            </div>
+
+            {verifyResult.revokedAt && verifyResult.revocationReason && (
+              <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-[11px]">
+                <span className="font-semibold block">Revocation Rationale:</span>
+                <p className="mt-0.5 italic">"{verifyResult.revocationReason}"</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Certificates Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
@@ -333,7 +494,7 @@ export default function InstitutionCertificatesPage() {
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <Award className="w-5 h-5 text-indigo-400" />
-                <span>Issue Certificate for Verified Credit</span>
+                <span>Issue Certificate for Completed Course Credit</span>
               </h3>
               <button
                 onClick={() => setShowIssueModal(false)}
@@ -351,9 +512,12 @@ export default function InstitutionCertificatesPage() {
 
             <form onSubmit={handleIssueCertificate} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Select Verified Credit
+                <label className="block text-xs font-medium text-slate-300 mb-0.5">
+                  Student's Completed Course Credit
                 </label>
+                <p className="text-[11px] text-slate-400 mb-1.5">
+                  Select the verified academic course credit this credential certifies:
+                </p>
                 {creditsLoading ? (
                   <p className="text-xs text-slate-500">Loading eligible verified credits...</p>
                 ) : (
@@ -365,7 +529,7 @@ export default function InstitutionCertificatesPage() {
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                     required
                   >
-                    <option value="">-- Choose a verified credit --</option>
+                    <option value="">-- Choose student course credit record --</option>
                     {verifiedCredits.map((c) => (
                       <option key={c._id} value={c._id}>
                         {c.studentId?.name || 'Student'} - {c.courseId?.courseName || c.courseId?.courseCode || 'Course'} ({c.credits} cr, Grade {c.grade})

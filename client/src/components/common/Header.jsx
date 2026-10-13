@@ -45,7 +45,7 @@ export default function Header({ toggleSidebar, title = 'Dashboard', breadcrumbs
         };
       case 'institution':
         return {
-          label: 'INSTITUTION NODE',
+          label: 'INSTITUTION',
           bg: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
           icon: Building2,
         };
@@ -80,18 +80,40 @@ export default function Header({ toggleSidebar, title = 'Dashboard', breadcrumbs
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:flex items-center space-x-2 text-xs text-slate-400">
-          <Link to="/" className="hover:text-slate-200 transition flex items-center space-x-1">
-            <span>NEP Hub</span>
-          </Link>
-          {breadcrumbs.map((crumb, idx) => (
-            <React.Fragment key={idx}>
-              <span className="text-slate-600">/</span>
-              <span className={idx === breadcrumbs.length - 1 ? 'text-slate-200 font-medium' : 'hover:text-slate-200'}>
-                {crumb}
-              </span>
-            </React.Fragment>
-          ))}
+        <div className="hidden sm:flex items-center space-x-2 text-xs">
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            const dashboardPath =
+              user?.role === 'admin'
+                ? '/admin/dashboard'
+                : user?.role === 'institution'
+                ? '/institution/dashboard'
+                : '/student/dashboard';
+
+            return (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span className="text-slate-600">/</span>}
+                {idx === 0 && breadcrumbs.length > 1 ? (
+                  <Link
+                    to={dashboardPath}
+                    className="text-slate-400 hover:text-slate-200 transition font-medium"
+                  >
+                    {crumb}
+                  </Link>
+                ) : (
+                  <span
+                    className={
+                      isLast
+                        ? 'text-slate-100 font-semibold tracking-tight'
+                        : 'text-slate-400 font-medium'
+                    }
+                  >
+                    {crumb}
+                  </span>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 
@@ -102,8 +124,8 @@ export default function Header({ toggleSidebar, title = 'Dashboard', breadcrumbs
           <BadgeIcon className="w-3.5 h-3.5" />
           <span>{badge.label}</span>
           {user?.institutionCode && (
-            <span className="ml-1 pl-1.5 border-l border-indigo-500/40 text-slate-300 font-mono">
-              [{user.institutionCode}]
+            <span className="text-slate-300 font-mono font-medium">
+              | {user.institutionCode}
             </span>
           )}
         </div>

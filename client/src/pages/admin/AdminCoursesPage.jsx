@@ -6,6 +6,7 @@ import {
   Building2,
   Filter,
   AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function AdminCoursesPage() {
@@ -43,17 +44,42 @@ export default function AdminCoursesPage() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-900/60 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[11px] font-semibold mb-2">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>National Course Registry</span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-100">National Course Catalog</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Cross-institutional registry of all NEP-accredited courses across participating universities
-            </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+        <div>
+          <div className="flex items-center space-x-2 text-purple-400 text-xs font-semibold mb-1">
+            <BookOpen className="w-4 h-4" />
+            <span>National Academic Course Directory</span>
+          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Course Catalog</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Cross-institutional registry of all approved academic courses across participating university nodes.
+          </p>
+        </div>
+        <button
+          onClick={fetchAllCourses}
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center space-x-2 self-start sm:self-center transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>Refresh Catalog</span>
+        </button>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-slate-400 font-medium">Total Courses Registered</div>
+          <div className="text-xl font-bold text-white mt-1 font-mono">{courses.length}</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-purple-400 font-medium">Cumulative Credits</div>
+          <div className="text-xl font-bold text-purple-400 mt-1 font-mono">
+            {courses.reduce((acc, c) => acc + (c.credits || 0), 0)}
+          </div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-emerald-400 font-medium">Participating Institutions</div>
+          <div className="text-xl font-bold text-emerald-400 mt-1 font-mono">
+            {new Set(courses.map((c) => c.institutionId?.code || c.institutionId?.name || c.institutionId).filter(Boolean)).size}
           </div>
         </div>
       </div>

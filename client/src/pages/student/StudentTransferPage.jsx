@@ -54,9 +54,9 @@ export default function StudentTransferPage() {
       ]);
 
       setTransfers(transfersRes.data || []);
-      // Filter verified credits belonging to this student
+      // Filter verified credits belonging to this student that have not already been transferred
       const verified = (creditsRes.data || []).filter(
-        (c) => c.verificationStatus === 'verified'
+        (c) => c.verificationStatus === 'verified' && !c.isTransferred
       );
       setCredits(verified);
 

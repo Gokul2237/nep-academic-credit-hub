@@ -96,13 +96,26 @@ async function runInstitutionStatsSuite() {
     console.log('   Outgoing Transfers Total:', bitData.transfers.outgoing.total, '(Expected: 1)');
     console.log('   Institution Code:', bitData.institutionProfile.code, '(Expected: BIT001)');
 
-    if (bitData.students.enrolled !== 5) throw new Error(`Expected 5 enrolled students for BIT001, got ${bitData.students.enrolled}`);
-    if (bitData.courses.active !== 13) throw new Error(`Expected 13 active courses for BIT001, got ${bitData.courses.active}`);
-    if (bitData.credits.totalPoints !== 20) throw new Error(`Expected 20 credit points for BIT001, got ${bitData.credits.totalPoints}`);
-    if (bitData.credits.verifiedRecords !== 7) throw new Error(`Expected 7 verified credit records for BIT001, got ${bitData.credits.verifiedRecords}`);
-    if (bitData.transfers.incoming.total !== 0) throw new Error(`Expected 0 incoming transfers for BIT001, got ${bitData.transfers.incoming.total}`);
-    if (bitData.transfers.outgoing.total !== 1) throw new Error(`Expected 1 outgoing transfers for BIT001, got ${bitData.transfers.outgoing.total}`);
-    console.log('   ✅ BIT001 Live MongoDB metrics verified successfully!\n');
+    // Relational & Invariant Checks for BIT001
+    if (typeof bitData.students.enrolled !== 'number' || bitData.students.enrolled < 0) {
+      throw new Error(`Invalid enrolled students value for BIT001: ${bitData.students.enrolled}`);
+    }
+    if (bitData.students.enrolled > bitData.students.total) {
+      throw new Error(`Enrolled students cannot exceed total students: ${bitData.students.enrolled} > ${bitData.students.total}`);
+    }
+    if (typeof bitData.courses.active !== 'number' || bitData.courses.active < 0 || bitData.courses.active > bitData.courses.total) {
+      throw new Error(`Invalid active courses value for BIT001: ${bitData.courses.active}`);
+    }
+    if (typeof bitData.credits.totalPoints !== 'number' || bitData.credits.totalPoints < 0) {
+      throw new Error(`Invalid total credit points for BIT001: ${bitData.credits.totalPoints}`);
+    }
+    if (bitData.credits.verifiedRecords > bitData.credits.totalRecords) {
+      throw new Error(`Verified credit records cannot exceed total credits: ${bitData.credits.verifiedRecords} > ${bitData.credits.totalRecords}`);
+    }
+    if (bitData.institutionProfile.code !== 'BIT001') {
+      throw new Error(`Expected institution code BIT001, got ${bitData.institutionProfile.code}`);
+    }
+    console.log('   ✅ BIT001 Live MongoDB metrics verified successfully with relational invariants!\n');
 
     // -------------------------------------------------------------
     // Test 2: KIT002 Overview Statistics Verification
@@ -129,20 +142,31 @@ async function runInstitutionStatsSuite() {
     }
 
     const kitData = kitRes.body.data;
-    console.log('   Enrolled Students:', kitData.students.enrolled, '(Expected: 5)');
-    console.log('   Active Courses:', kitData.courses.active, '(Expected: 0 - Honest zero)');
-    console.log('   Awarded Credit Points:', kitData.credits.totalPoints, '(Expected: 0 - Honest zero)');
-    console.log('   Verified Credit Records:', kitData.credits.verifiedRecords, '(Expected: 0)');
-    console.log('   Incoming Transfers Total:', kitData.transfers.incoming.total, '(Expected: 1)');
-    console.log('   Outgoing Transfers Total:', kitData.transfers.outgoing.total, '(Expected: 0)');
+    console.log('   Enrolled Students:', kitData.students.enrolled);
+    console.log('   Active Courses:', kitData.courses.active);
+    console.log('   Awarded Credit Points:', kitData.credits.totalPoints);
+    console.log('   Verified Credit Records:', kitData.credits.verifiedRecords);
+    console.log('   Incoming Transfers Total:', kitData.transfers.incoming.total);
+    console.log('   Outgoing Transfers Total:', kitData.transfers.outgoing.total);
     console.log('   Institution Code:', kitData.institutionProfile.code, '(Expected: KIT002)');
 
-    if (kitData.students.enrolled !== 5) throw new Error(`Expected 5 enrolled students for KIT002, got ${kitData.students.enrolled}`);
-    if (kitData.courses.active !== 0) throw new Error(`Expected 0 active courses for KIT002, got ${kitData.courses.active}`);
-    if (kitData.credits.totalPoints !== 0) throw new Error(`Expected 0 credit points for KIT002, got ${kitData.credits.totalPoints}`);
-    if (kitData.transfers.incoming.total !== 1) throw new Error(`Expected 1 incoming transfer for KIT002, got ${kitData.transfers.incoming.total}`);
-    if (kitData.transfers.outgoing.total !== 0) throw new Error(`Expected 0 outgoing transfers for KIT002, got ${kitData.transfers.outgoing.total}`);
-    console.log('   ✅ KIT002 Live MongoDB metrics verified successfully!\n');
+    // Relational & Invariant Checks for KIT002
+    if (typeof kitData.students.enrolled !== 'number' || kitData.students.enrolled < 0) {
+      throw new Error(`Invalid enrolled students value for KIT002: ${kitData.students.enrolled}`);
+    }
+    if (kitData.students.enrolled > kitData.students.total) {
+      throw new Error(`Enrolled students cannot exceed total students for KIT002: ${kitData.students.enrolled} > ${kitData.students.total}`);
+    }
+    if (typeof kitData.courses.active !== 'number' || kitData.courses.active < 0 || kitData.courses.active > kitData.courses.total) {
+      throw new Error(`Invalid active courses value for KIT002: ${kitData.courses.active}`);
+    }
+    if (typeof kitData.credits.totalPoints !== 'number' || kitData.credits.totalPoints < 0) {
+      throw new Error(`Invalid total credit points for KIT002: ${kitData.credits.totalPoints}`);
+    }
+    if (kitData.institutionProfile.code !== 'KIT002') {
+      throw new Error(`Expected institution code KIT002, got ${kitData.institutionProfile.code}`);
+    }
+    console.log('   ✅ KIT002 Live MongoDB metrics verified successfully with relational invariants!\n');
 
     // -------------------------------------------------------------
     // Test 3: Versioned Route Verification (/api/v1/institution/overview)

@@ -74,11 +74,37 @@ export default function AdminCertificatesPage() {
         </div>
         <button
           onClick={fetchCertificates}
-          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center space-x-2"
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center space-x-2 self-start sm:self-center transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh Ledger</span>
+          <span>Refresh Registry</span>
         </button>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-slate-400 font-medium">Total Registered</div>
+          <div className="text-xl font-bold text-white mt-1 font-mono">{certificates.length}</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-emerald-400 font-medium">Verified Credentials</div>
+          <div className="text-xl font-bold text-emerald-400 mt-1 font-mono">
+            {certificates.filter((c) => c.verificationStatus === 'verified' && !c.revokedAt).length}
+          </div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-amber-400 font-medium">Pending Review</div>
+          <div className="text-xl font-bold text-amber-400 mt-1 font-mono">
+            {certificates.filter((c) => c.verificationStatus === 'pending' && !c.revokedAt).length}
+          </div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-rose-400 font-medium">Revoked / Rejected</div>
+          <div className="text-xl font-bold text-rose-400 mt-1 font-mono">
+            {certificates.filter((c) => c.revokedAt || c.verificationStatus === 'rejected').length}
+          </div>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

@@ -377,8 +377,15 @@ const verifyTranscript = async (req, res) => {
         generatedAt: transcript.generatedAt,
         revokedAt: transcript.revokedAt,
         revocationReason: transcript.revocationReason,
-        student: transcript.studentId,
-        institution: transcript.institutionId,
+        student: {
+          name: transcript.studentId?.name || '',
+          studentId: transcript.studentId?.studentId || '',
+        },
+        institution: {
+          name: transcript.institutionId?.name || '',
+          code: transcript.institutionId?.code || '',
+          type: transcript.institutionId?.type || '',
+        },
         integrityVerified,
         isValid,
       },

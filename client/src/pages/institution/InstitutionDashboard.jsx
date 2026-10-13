@@ -61,7 +61,7 @@ export default function InstitutionDashboard() {
       }
     } catch (err) {
       console.error('Failed to load institution dashboard data:', err);
-      setError(err.message || 'Unable to load real-time statistics from MongoDB.');
+      setError(err.message || 'Unable to load real-time platform statistics.');
     } finally {
       setLoading(false);
     }
@@ -82,6 +82,61 @@ export default function InstitutionDashboard() {
   const pendingTransfersCount = overview?.transfers?.incoming?.pending ?? 0;
   const incomingTotal = overview?.transfers?.incoming?.total ?? 0;
   const outgoingTotal = overview?.transfers?.outgoing?.total ?? 0;
+
+  const formatAuditAction = (action) => {
+    if (!action) return 'Institutional Activity';
+    const act = String(action).toUpperCase();
+    if (act.includes('GENERATE') && act.includes('KEY')) return 'API key generated';
+    if (act.includes('REVOKE') && act.includes('KEY')) return 'API key revoked';
+    if (act.includes('POLICY') && (act.includes('PUBLISH') || act.includes('UPDATE'))) return 'Credit policy published';
+    if (act.includes('TRANSFER') && act.includes('APPROV')) return 'Transfer request approved';
+    if (act.includes('TRANSFER') && act.includes('REJECT')) return 'Transfer request rejected';
+    if (act.includes('TRANSFER') && act.includes('INIT')) return 'Transfer request initiated';
+    if (act.includes('VERIF') && act.includes('CREDIT')) return 'Credit record verified';
+    if (act.includes('AWARD') && act.includes('CREDIT')) return 'Credit record awarded';
+    if (act.includes('CERT') && (act.includes('ISSUE') || act.includes('CREATE'))) return 'Certificate issued';
+    if (act.includes('CERT') && act.includes('VERIF')) return 'Certificate verified';
+    if (act.includes('CERT') && act.includes('REVOK')) return 'Certificate revoked';
+    if (act.includes('TRANSCRIPT')) return 'Transcript generated';
+    if (act.includes('LOGIN')) return 'Institutional sign in';
+
+    return act
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const getActionCategory = (action) => {
+    const act = String(action).toUpperCase();
+    if (act.includes('KEY')) return { label: 'Security & API', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' };
+    if (act.includes('POLICY')) return { label: 'Governance', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' };
+    if (act.includes('TRANSFER')) return { label: 'Credit Mobility', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
+    if (act.includes('CREDIT')) return { label: 'Academic', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
+    if (act.includes('CERT')) return { label: 'Credentials', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
+    return { label: 'System', color: 'text-slate-400 bg-slate-800 border-slate-700' };
+  };
+
+  const getActorName = (log) => {
+    if (log.userId?.name) return log.userId.name;
+    if (log.userId?.email) return log.userId.email;
+    return 'Authorized administrator';
+  };
+
+  const formatAuditTime = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+
+    if (isToday) return `Today, ${timeStr}`;
+    if (isYesterday) return `Yesterday, ${timeStr}`;
+    return `${d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}, ${timeStr}`;
+  };
 
   // Primary 4 live metrics
   const stats = [
@@ -417,7 +472,7 @@ export default function InstitutionDashboard() {
         {loading ? (
           <div className="p-8 text-center text-slate-400 text-xs flex items-center justify-center space-x-2">
             <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />
-            <span>Loading live transfer queue from MongoDB...</span>
+            <span>Loading live transfer queue...</span>
           </div>
         ) : incomingTransfers.length === 0 ? (
           <div className="p-8 text-center border border-dashed border-slate-800 rounded-xl">
@@ -504,38 +559,55 @@ export default function InstitutionDashboard() {
       {/* Institutional Audit Activity Feed (if available) */}
       {overview?.recentActivity && overview.recentActivity.length > 0 && (
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2">
               <Activity className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-slate-100">Recent Institutional Audit Trail</h3>
+              <div>
+                <h3 className="text-sm font-bold text-slate-100">Recent Institutional Audit Trail</h3>
+                <p className="text-xs text-slate-400">Authenticated administrative activity and governance events</p>
+              </div>
             </div>
-            <span className="text-[11px] text-slate-400">
-              {overview.recentActivity.length} recent events logged
-            </span>
+            <Link
+              to="/institution/api-logs"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1 transition"
+            >
+              <span>View All Activity</span>
+              <span>→</span>
+            </Link>
           </div>
 
-          <div className="space-y-2">
-            {overview.recentActivity.map((log) => (
-              <div
-                key={log._id || log.logId}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-800 text-xs"
-              >
-                <div className="flex items-center space-x-3">
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-semibold">
-                    {log.action}
-                  </span>
-                  <div>
-                    <span className="text-slate-200 font-medium">{log.resource}</span>
-                    {log.userId?.email && (
-                      <span className="text-slate-400 text-[10px] ml-2">by {log.userId.email}</span>
-                    )}
+          <div className="space-y-2.5">
+            {overview.recentActivity.slice(0, 5).map((log) => {
+              const actionLabel = formatAuditAction(log.action);
+              const category = getActionCategory(log.action);
+              const actor = getActorName(log);
+              const time = formatAuditTime(log.createdAt);
+
+              return (
+                <div
+                  key={log._id || log.logId}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-slate-800/40 border border-slate-800 text-xs hover:border-slate-700/80 transition gap-2"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-slate-200">{actionLabel}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${category.color}`}>
+                        {category.label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Performed by: <span className="text-slate-300 font-medium">{actor}</span>
+                    </p>
+                  </div>
+
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      {time}
+                    </span>
                   </div>
                 </div>
-                <span className="text-slate-400 font-mono text-[10px]">
-                  {new Date(log.createdAt).toLocaleDateString()} {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

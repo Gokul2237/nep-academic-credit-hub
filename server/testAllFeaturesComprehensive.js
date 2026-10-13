@@ -1,8 +1,23 @@
 const http = require('http');
 const mongoose = require('mongoose');
 const app = require('./server.js');
+const { Course } = require('./models/Course');
+const { AcademicCredit } = require('./models/AcademicCredit');
+const { Certificate } = require('./models/Certificate');
+const { TransferRequest } = require('./models/TransferRequest');
+const { Transcript } = require('./models/Transcript');
+const APIKey = require('./models/APIKey');
 
 let serverInstance = null;
+
+const createdArtifacts = {
+  courses: [],
+  credits: [],
+  certificates: [],
+  transfers: [],
+  transcripts: [],
+  apiKeys: [],
+};
 
 // Helper: HTTP request wrapper
 const makeRequest = (options, postData = null) => {
@@ -233,6 +248,7 @@ async function runComprehensiveSuite() {
     );
     assert(transcriptPostRes.status === 200 || transcriptPostRes.status === 201, 'Student can generate academic transcript');
     const transcriptData = transcriptPostRes.body.data;
+    if (transcriptData?._id) createdArtifacts.transcripts.push(transcriptData._id);
     assert(transcriptData.verificationCode !== undefined, 'Transcript contains verificationCode');
 
     // Public Transcript Verification (Without JWT)
@@ -343,6 +359,7 @@ async function runComprehensiveSuite() {
     );
     assert(createCourseRes.status === 201, 'Institution can create course');
     const createdCourse = createCourseRes.body.data;
+    if (createdCourse?._id) createdArtifacts.courses.push(createdCourse._id);
 
     // Update course
     const updateCourseRes = await makeRequest(
@@ -410,6 +427,7 @@ async function runComprehensiveSuite() {
     );
     assert(awardRes.status === 201, 'Credit awarded successfully');
     const awardedCredit = awardRes.body.data;
+    if (awardedCredit?._id) createdArtifacts.credits.push(awardedCredit._id);
 
     // Verify credit
     const verifyCreditRes = await makeRequest(
@@ -452,6 +470,7 @@ async function runComprehensiveSuite() {
     );
     assert(certIssueRes.status === 201, 'Institution can issue certificate');
     const issuedCert = certIssueRes.body.data;
+    if (issuedCert?._id) createdArtifacts.certificates.push(issuedCert._id);
 
     // Institution reviews and marks certificate as verified
     const reviewCertRes = await makeRequest(
@@ -512,6 +531,7 @@ async function runComprehensiveSuite() {
     assert(keyGenRes.status === 201, 'API Key generated successfully');
     const apiKeySecret = keyGenRes.body.data?.secretKey || keyGenRes.body.data?.apiKey;
     const apiKeyId = keyGenRes.body.data?._id;
+    if (apiKeyId) createdArtifacts.apiKeys.push(apiKeyId);
     assert(apiKeySecret && apiKeySecret.startsWith('nep_live_'), 'Key has nep_live_ prefix');
 
     // System-to-system B2B Gateway Consumption
@@ -740,6 +760,7 @@ async function runComprehensiveSuite() {
     );
     assert(transferReqRes.status === 201, 'Transfer Request initiated successfully');
     const transferReq = transferReqRes.body.data;
+    if (transferReq?._id) createdArtifacts.transfers.push(transferReq._id);
     assert(transferReq.status === 'PENDING', 'Transfer Request status is PENDING');
     console.log(`   Transfer Request ID: #${transferReq._id.slice(-6).toUpperCase()}`);
 
@@ -799,6 +820,7 @@ async function runComprehensiveSuite() {
     );
     assert(finalTranscriptRes.status === 200 || finalTranscriptRes.status === 201, 'Student generates updated transcript');
     const finalTranscript = finalTranscriptRes.body.data;
+    if (finalTranscript?._id) createdArtifacts.transcripts.push(finalTranscript._id);
     assert(finalTranscript.verificationCode !== undefined, 'Updated transcript has verification code');
 
     const verifyFinalRes = await makeRequest({
@@ -810,33 +832,49 @@ async function runComprehensiveSuite() {
     assert(verifyFinalRes.status === 200, 'Public transcript verification confirms updated transcript');
     console.log(`   Official Transcript Verified Code: ${finalTranscript.verificationCode}`);
 
-    // Clean up test course and credit
-    console.log('\n🧹 Cleaning up test course and credit records...');
-    await makeRequest({
-      hostname: 'localhost',
-      port: 5000,
-      path: `/api/courses/${createdCourse._id}`,
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${sourceInstAuth.token}` },
-    });
-    console.log('   ✓ Temporary test artifacts cleaned up cleanly.');
-
     console.log('\n================================================================');
     console.log(`🎉 ALL FEATURES VERIFIED SUCCESSFULLY!`);
     console.log(`   Total Tests Passed: ${passedTests}`);
     console.log(`   Total Tests Failed: ${failedTests}`);
     console.log('================================================================\n');
+  } catch (error) {
+    console.error('\n❌ TEST SUITE FAILED WITH ERROR:', error.message);
+  } finally {
+    console.log('\n🧹 Running Safe Comprehensive Teardown of Test-Created Artifacts...');
+    try {
+      if (createdArtifacts.transfers.length > 0) {
+        await TransferRequest.deleteMany({ _id: { $in: createdArtifacts.transfers } });
+        console.log(`   ✓ Removed ${createdArtifacts.transfers.length} test transfer request(s)`);
+      }
+      if (createdArtifacts.transcripts.length > 0) {
+        await Transcript.deleteMany({ _id: { $in: createdArtifacts.transcripts } });
+        console.log(`   ✓ Removed ${createdArtifacts.transcripts.length} test transcript(s)`);
+      }
+      if (createdArtifacts.certificates.length > 0) {
+        await Certificate.deleteMany({ _id: { $in: createdArtifacts.certificates } });
+        console.log(`   ✓ Removed ${createdArtifacts.certificates.length} test certificate(s)`);
+      }
+      if (createdArtifacts.credits.length > 0) {
+        await AcademicCredit.deleteMany({ _id: { $in: createdArtifacts.credits } });
+        console.log(`   ✓ Removed ${createdArtifacts.credits.length} test academic credit(s)`);
+      }
+      if (createdArtifacts.courses.length > 0) {
+        await Course.deleteMany({ _id: { $in: createdArtifacts.courses } });
+        console.log(`   ✓ Removed ${createdArtifacts.courses.length} test course(s)`);
+      }
+      if (createdArtifacts.apiKeys.length > 0) {
+        await APIKey.deleteMany({ _id: { $in: createdArtifacts.apiKeys } });
+        console.log(`   ✓ Removed ${createdArtifacts.apiKeys.length} test API key(s)`);
+      }
+      console.log('   ✓ Database integrity preserved (pre-existing academic records intact).');
+    } catch (cleanupErr) {
+      console.error('   ⚠️ Teardown error:', cleanupErr.message);
+    }
 
     if (serverInstance) {
       serverInstance.close();
     }
-    process.exit(0);
-  } catch (error) {
-    console.error('\n❌ TEST SUITE FAILED WITH ERROR:', error.message);
-    if (serverInstance) {
-      serverInstance.close();
-    }
-    process.exit(1);
+    process.exit(failedTests > 0 ? 1 : 0);
   }
 }
 

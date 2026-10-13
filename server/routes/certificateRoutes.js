@@ -13,9 +13,10 @@ const {
 
 const { authenticate } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
+const { verificationLimiter } = require('../middleware/rateLimitMiddleware');
 
 /*
- * Public verification
+ * Public verification with rate limiting
  *
  * IMPORTANT:
  * This route must appear before /:id.
@@ -23,6 +24,7 @@ const { authorize } = require('../middleware/roleMiddleware');
  */
 router.get(
   '/verify/:certificateId',
+  verificationLimiter,
   verifyCertificate
 );
 

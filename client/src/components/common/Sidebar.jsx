@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   ShieldCheck,
@@ -26,6 +26,8 @@ import {
   Building2,
   Activity,
   X,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 const studentNavItems = [
@@ -43,6 +45,11 @@ const studentNavItems = [
     name: 'Credit Timeline',
     path: '/student/timeline',
     icon: Clock,
+  },
+  {
+    name: 'Credit Transfers',
+    path: '/student/transfers',
+    icon: ArrowRightLeft,
   },
   {
     name: 'Eligibility Tracker',
@@ -118,10 +125,13 @@ const institutionNavItems = [
     icon: Shield,
   },
   {
-    name: 'Policy Versions',
-    path: '/institution/policy-versions',
-    icon: Layers,
+    name: 'Certificates & Verification',
+    path: '/institution/verify-certificates',
+    icon: Award,
   },
+];
+
+const institutionIntegrationNavItems = [
   {
     name: 'API Gateway',
     path: '/institution/api-gateway',
@@ -136,16 +146,6 @@ const institutionNavItems = [
     name: 'API Logs',
     path: '/institution/api-logs',
     icon: ScrollText,
-  },
-  {
-    name: 'Transfer Decisions',
-    path: '/institution/decisions',
-    icon: FileCheck,
-  },
-  {
-    name: 'Certificate Verification',
-    path: '/institution/verify-certificates',
-    icon: Award,
   },
 ];
 
@@ -209,6 +209,8 @@ const adminNavItems = [
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user } = useAuth();
+  const location = useLocation();
+  const [integrationOpen, setIntegrationOpen] = useState(true);
 
   const getNavItems = () => {
     switch (user?.role) {
@@ -260,7 +262,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 {user?.role === 'student'
                   ? 'Student Portal'
                   : user?.role === 'institution'
-                  ? 'Institution Node'
+                  ? 'Institution Gateway'
                   : 'System Governance'}
               </span>
             </div>
@@ -307,6 +309,57 @@ export default function Sidebar({ isOpen, onClose }) {
               </NavLink>
             );
           })}
+
+          {/* Collapsible Integration & Security Group for Institution */}
+          {user?.role === 'institution' && (
+            <div className="pt-3 mt-3 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={() => setIntegrationOpen(!integrationOpen)}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-slate-200 uppercase tracking-wider transition rounded-lg hover:bg-slate-800/40"
+              >
+                <span className="flex items-center space-x-1.5">
+                  <Webhook className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Integration & Security</span>
+                </span>
+
+                {integrationOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                )}
+              </button>
+
+              {integrationOpen && (
+                <div className="mt-1 space-y-1">
+                  {institutionIntegrationNavItems.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition duration-150 ${
+                            isActive
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                          }`
+                        }
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+
+                        <span className="truncate">
+                          {item.name}
+                        </span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Bottom Node Meta */}
@@ -316,7 +369,7 @@ export default function Sidebar({ isOpen, onClose }) {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
 
               <span className="text-slate-300 font-medium capitalize">
-                {user?.role || 'Guest'} Node
+                {user?.role || 'Guest'} Session
               </span>
             </div>
 

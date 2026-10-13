@@ -46,22 +46,42 @@ export default function AdminInstitutionsPage() {
         <div>
           <div className="flex items-center space-x-2 text-purple-400 text-xs font-semibold mb-1">
             <Building2 className="w-4 h-4" />
-            <span>National Accreditation Node</span>
+            <span>Accredited Universities Directory</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Institution Governance & Verification
+            Institution Management
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Review and monitor accredited universities participating in the Academic Bank of Credits.
+            Review and monitor accredited universities participating in the National Academic Bank of Credits.
           </p>
         </div>
         <button
           onClick={fetchInstitutions}
-          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center space-x-2 transition"
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center space-x-2 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh Roster</span>
+          <span>Refresh Institutions</span>
         </button>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-slate-400 font-medium">Total Universities</div>
+          <div className="text-xl font-bold text-white mt-1 font-mono">{institutions.length}</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-emerald-400 font-medium">Accredited & Verified</div>
+          <div className="text-xl font-bold text-emerald-400 mt-1 font-mono">
+            {institutions.filter((i) => (i.verificationStatus || 'VERIFIED').toUpperCase() === 'VERIFIED').length}
+          </div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-xs text-amber-400 font-medium">Pending Accreditation</div>
+          <div className="text-xl font-bold text-amber-400 mt-1 font-mono">
+            {institutions.filter((i) => (i.verificationStatus || '').toUpperCase() === 'PENDING').length}
+          </div>
+        </div>
       </div>
 
       <div className="relative">
