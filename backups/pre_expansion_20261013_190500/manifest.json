@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-10-13T13:34:22.694Z",
+  "database": "nep_academic_hub",
+  "collections": {
+    "courses": {
+      "count": 30,
+      "file": "courses.json",
+      "bytes": 13402
+    },
+    "users": {
+      "count": 34,
+      "file": "users.json",
+      "bytes": 17404
+    },
+    "institutions": {
+      "count": 14,
+      "file": "institutions.json",
+      "bytes": 5662
+    },
+    "academiccredits": {
+      "count": 0,
+      "file": "academiccredits.json",
+      "bytes": 2
+    }
+  }
+}
