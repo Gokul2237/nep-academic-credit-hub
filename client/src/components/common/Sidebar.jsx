@@ -17,6 +17,7 @@ import {
   BookOpen,
   GraduationCap,
   FileCheck,
+  FileSpreadsheet,
   Shield,
   Layers,
   Webhook,
@@ -113,6 +114,11 @@ const institutionNavItems = [
     name: 'Academic Credits',
     path: '/institution/credits',
     icon: GraduationCap,
+  },
+  {
+    name: 'Results Import & Credit Hub',
+    path: '/institution/results-import',
+    icon: FileSpreadsheet,
   },
   {
     name: 'Credit Transfer Requests',

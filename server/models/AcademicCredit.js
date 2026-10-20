@@ -110,6 +110,18 @@ const academicCreditSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    semesterResultId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SemesterResult',
+      default: null,
+      index: true,
+    },
+    importBatchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ResultImportBatch',
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,

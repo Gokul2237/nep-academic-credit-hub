@@ -22,6 +22,7 @@ import {
   RefreshCw,
   AlertCircle,
   Sparkles,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function InstitutionDashboard() {
@@ -224,6 +225,13 @@ export default function InstitutionDashboard() {
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
+            <Link
+              to="/institution/results-import"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center space-x-2"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Results Import</span>
+            </Link>
             <Link
               to="/institution/transfers"
               className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/20 transition flex items-center space-x-2"

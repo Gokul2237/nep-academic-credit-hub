@@ -1,0 +1,112 @@
+{
+  "deletedAt": "2026-10-18T16:24:46.161Z",
+  "users": [
+    {
+      "_id": "6ad4ed1c6acab901276dc0b8",
+      "name": "Dean Inst A",
+      "email": "dean_inst_a_8206@bit.edu",
+      "passwordHash": "$2a$12$OVA6vD/s1h/Tm9dAhwpZA.aXrOgo8F6knuMaXOCTEXqKruFZDzaY.",
+      "role": "institution",
+      "studentId": null,
+      "currentSemester": 1,
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "institutionCode": "BIT001",
+      "institutionName": "BANNARI AMMAN INSTITUTE OF TECHNOLOGY",
+      "isActive": true,
+      "createdAt": "2026-10-18T16:00:28.316Z",
+      "updatedAt": "2026-10-18T16:00:28.316Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ad4ecd7375fd4a0095a3ed7",
+      "name": "Dean Inst A",
+      "email": "dean_inst_a_9828@bit.edu",
+      "passwordHash": "$2a$12$pKB3uKCCRFxnqGUJBXjrQ.moe1WYrsA8F2/m33kGZfviBZtrsG2OC",
+      "role": "institution",
+      "studentId": null,
+      "currentSemester": 1,
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "institutionCode": "BIT001",
+      "institutionName": "BANNARI AMMAN INSTITUTE OF TECHNOLOGY",
+      "isActive": true,
+      "createdAt": "2026-10-18T15:59:19.886Z",
+      "updatedAt": "2026-10-18T15:59:19.886Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ad4ecd8375fd4a0095a3edb",
+      "name": "Aarav Test Student",
+      "email": "stu1_9828@bit.edu",
+      "passwordHash": "$2a$12$kSukNsLT.54Jvq8DCkooouwlXLOgNPN5./tMpRnN1Azwsmymumg4W",
+      "role": "student",
+      "studentId": "ABC-TEST1-9828",
+      "currentSemester": 1,
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "institutionCode": "BIT001",
+      "institutionName": "BANNARI AMMAN INSTITUTE OF TECHNOLOGY",
+      "isActive": true,
+      "createdAt": "2026-10-18T15:59:20.245Z",
+      "updatedAt": "2026-10-18T15:59:20.245Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ad4ecd8375fd4a0095a3edf",
+      "name": "Bhavya Test Student",
+      "email": "stu2_9828@bit.edu",
+      "passwordHash": "$2a$12$xFW0s85LAzdCoiFz6bEnXuJnRN6ulBiHLTD4YZ/vxpavRyyvpj9re",
+      "role": "student",
+      "studentId": "ABC-TEST2-9828",
+      "currentSemester": 1,
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "institutionCode": "BIT001",
+      "institutionName": "BANNARI AMMAN INSTITUTE OF TECHNOLOGY",
+      "isActive": true,
+      "createdAt": "2026-10-18T15:59:20.667Z",
+      "updatedAt": "2026-10-18T15:59:20.667Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ad4ecd9375fd4a0095a3ee3",
+      "name": "Chetan External Student",
+      "email": "stu3_9828@kit.edu",
+      "passwordHash": "$2a$12$0PDBCzsowZ0RmsIdjqYmfu7e6BEa5FETMraf.ep3Z0FHzkZFhJvo6",
+      "role": "student",
+      "studentId": "ABC-TEST3-9828",
+      "currentSemester": 1,
+      "institutionId": "6ab0b1f033bd480c7eb1affc",
+      "institutionCode": "KIT002",
+      "institutionName": "KONGU INSTITUTE OF TECHNOLOGY",
+      "isActive": true,
+      "createdAt": "2026-10-18T15:59:21.036Z",
+      "updatedAt": "2026-10-18T15:59:21.036Z",
+      "__v": 0
+    }
+  ],
+  "academicCredits": [],
+  "semesterResults": [],
+  "resultImportBatches": [],
+  "auditLogs": [
+    {
+      "_id": "6ad4ed1f6acab901276dc0f4",
+      "logId": "LOG-CORRECT-1792339231866-680",
+      "userId": "6ad4ed1c6acab901276dc0b8",
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "action": "RESULT_CORRECTED",
+      "resource": "SemesterResult:6ad4ed1f6acab901276dc0de",
+      "details": {
+        "resultId": "6ad4ed1f6acab901276dc0de",
+        "studentAbcId": "ABC-TEST2-8206",
+        "courseCode": "CS8206",
+        "newMarks": 68,
+        "newGrade": "B+",
+        "newStatus": "PASS",
+        "newCreditsEarned": 4,
+        "reason": "Re-evaluation passed by Institutional Academic Examination Board"
+      },
+      "ipAddress": "::1",
+      "createdAt": "2026-10-18T16:00:31.867Z",
+      "updatedAt": "2026-10-18T16:00:31.867Z",
+      "__v": 0
+    }
+  ]
+}

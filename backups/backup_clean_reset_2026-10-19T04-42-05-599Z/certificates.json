@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "6ad4edcc6acab901276dc2e6",
+    "certificateId": "NEP-CERT-MVE0LRDA-C71419CF",
+    "studentId": "6ad4edc66acab901276dc2a9",
+    "institutionId": "6ad4edc56acab901276dc29d",
+    "courseId": "6ad4edcc6acab901276dc2c0",
+    "academicCreditId": "6ad4edcc6acab901276dc2cb",
+    "title": "Advanced Academic Achievement",
+    "certificateType": "course_completion",
+    "issueDate": "2026-10-18T16:03:24.238Z",
+    "documentUrl": "https://example.com/phase5-certificate.pdf",
+    "integrityHash": "9937603b6fbd37a2979299efe2738b0db01d7b72aee3009757a0e15cccfda7ff",
+    "verificationStatus": "revoked",
+    "verifiedBy": "6ad4edc56acab901276dc29f",
+    "verifiedAt": "2026-10-18T16:03:24.569Z",
+    "rejectionReason": "",
+    "revokedAt": "2026-10-18T16:03:24.760Z",
+    "revocationReason": "Phase 5 revocation lifecycle test",
+    "createdAt": "2026-10-18T16:03:24.240Z",
+    "updatedAt": "2026-10-18T16:03:24.760Z",
+    "__v": 0
+  }
+]

@@ -51,7 +51,7 @@ router.get(
 
       const students = await User.find(query)
         .select(
-          '_id name email studentId institutionId institutionCode institutionName createdAt'
+          '_id name email studentId currentSemester institutionId institutionCode institutionName createdAt'
         )
         .sort({ name: 1 })
         .lean();
@@ -95,7 +95,7 @@ router.get(
         role: ROLES.STUDENT,
       })
         .select(
-          '_id name email studentId institutionId institutionCode institutionName isActive createdAt'
+          '_id name email studentId currentSemester institutionId institutionCode institutionName isActive createdAt'
         )
         .lean();
 

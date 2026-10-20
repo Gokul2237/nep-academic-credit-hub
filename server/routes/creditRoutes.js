@@ -10,6 +10,7 @@ const {
   getTimeline,
   updateCredit,
 } = require('../controllers/creditController');
+const { getStudentOwnSemesterResults } = require('../controllers/resultImportController');
 const { authenticate } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
@@ -24,6 +25,7 @@ router.post('/validate', authorize('institution', 'admin'), validateCreditPayloa
 // Student Specific Summaries
 router.get('/wallet-summary', getWalletSummary);
 router.get('/timeline', getTimeline);
+router.get('/semester-results', getStudentOwnSemesterResults);
 router.get('/student/:studentId', getStudentCredits);
 
 // General Query & Single Record

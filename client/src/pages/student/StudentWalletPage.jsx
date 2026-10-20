@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { creditService } from '../../services/creditService';
+import { useAuth } from '../../context/AuthContext';
 import {
   Wallet,
   CheckCircle2,
@@ -13,9 +14,11 @@ import {
   X,
   AlertCircle,
   Hash,
+  GraduationCap,
 } from 'lucide-react';
 
 export default function StudentWalletPage() {
+  const { user } = useAuth();
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,6 +77,10 @@ export default function StudentWalletPage() {
           </div>
 
           <div className="flex items-center space-x-2">
+            <span className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-400 font-mono font-semibold flex items-center space-x-1.5">
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Current: Semester {user?.currentSemester || 1}</span>
+            </span>
             <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 font-mono flex items-center space-x-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>SHA-256 Integrity Verified</span>

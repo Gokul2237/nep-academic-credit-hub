@@ -55,6 +55,17 @@ const userSchema = new mongoose.Schema(
     },
 
     /*
+     * Current academic semester for enrolled students (1-12)
+     */
+    currentSemester: {
+      type: Number,
+      min: [1, 'Semester cannot be less than 1'],
+      max: [12, 'Semester cannot exceed 12'],
+      default: 1,
+      index: true,
+    },
+
+    /*
      * Institution associated with the user.
      *
      * For students:

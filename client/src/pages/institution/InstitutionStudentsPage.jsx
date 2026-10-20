@@ -16,6 +16,7 @@ export default function InstitutionStudentsPage() {
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -38,11 +39,15 @@ export default function InstitutionStudentsPage() {
 
   const filteredStudents = students.filter((s) => {
     const q = searchQuery.toLowerCase();
-    return (
+    const matchesQuery =
       s.name?.toLowerCase().includes(q) ||
       s.email?.toLowerCase().includes(q) ||
-      s.studentId?.toLowerCase().includes(q)
-    );
+      s.studentId?.toLowerCase().includes(q);
+
+    const matchesSemester =
+      !semesterFilter || String(s.currentSemester || 1) === String(semesterFilter);
+
+    return matchesQuery && matchesSemester;
   });
 
   return (
@@ -58,7 +63,7 @@ export default function InstitutionStudentsPage() {
             {user?.institutionName || 'Institution'} Students
           </h1>
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
-            Directory of enrolled students affiliated with your institution node. Use this directory when awarding academic credits.
+            Directory of enrolled students affiliated with your institution node. Track their current academic progression semester and verified ABC IDs.
           </p>
         </div>
 
@@ -75,8 +80,8 @@ export default function InstitutionStudentsPage() {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -86,6 +91,21 @@ export default function InstitutionStudentsPage() {
             placeholder="Search student by name, email, or ABC ID..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-blue-500"
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <select
+            value={semesterFilter}
+            onChange={(e) => setSemesterFilter(e.target.value)}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-blue-500"
+          >
+            <option value="">All Semesters</option>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+              <option key={sem} value={sem}>
+                Current: Semester {sem}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -108,6 +128,7 @@ export default function InstitutionStudentsPage() {
                 <tr>
                   <th className="px-4 py-3">Student Name</th>
                   <th className="px-4 py-3">ABC ID / Roll No</th>
+                  <th className="px-4 py-3">Current Semester</th>
                   <th className="px-4 py-3">Official Email</th>
                   <th className="px-4 py-3">Affiliated Institution</th>
                   <th className="px-4 py-3">Enrolled On</th>
@@ -129,6 +150,11 @@ export default function InstitutionStudentsPage() {
                     </td>
                     <td className="px-4 py-3 font-mono font-semibold text-blue-400">
                       {student.studentId || '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-semibold text-xs">
+                        Semester {student.currentSemester || 1}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-slate-300 font-mono">
                       {student.email}

@@ -49,6 +49,7 @@ const InstitutionApiGatewayPage = lazy(() => import('./pages/institution/Institu
 const InstitutionApiKeysPage = lazy(() => import('./pages/institution/InstitutionApiKeysPage'));
 const InstitutionApiLogsPage = lazy(() => import('./pages/institution/InstitutionApiLogsPage'));
 const InstitutionPoliciesPage = lazy(() => import('./pages/institution/InstitutionPoliciesPage'));
+const InstitutionResultsImportPage = lazy(() => import('./pages/institution/InstitutionResultsImportPage'));
 
 // Admin Views
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -461,6 +462,16 @@ export default function App() {
             <Route
               path="credits"
               element={<InstitutionCreditsPage />}
+            />
+
+            <Route
+              path="results-import"
+              element={<InstitutionResultsImportPage />}
+            />
+
+            <Route
+              path="results"
+              element={<InstitutionResultsImportPage />}
             />
 
             <Route

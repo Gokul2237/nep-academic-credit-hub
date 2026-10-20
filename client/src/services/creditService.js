@@ -42,4 +42,10 @@ export const creditService = {
     const response = await api.get(`/credits/student/${studentId}`);
     return response.data;
   },
+
+  // Get logged-in student's own semester results and progression
+  getSemesterResults: async () => {
+    const response = await api.get('/credits/semester-results');
+    return response.data;
+  },
 };

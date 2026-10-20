@@ -1,0 +1,67 @@
+{
+  "createdAt": "2026-10-19T04:42:05.600Z",
+  "mongoURI": "mongodb://127.0.0.1:27017/nep_academic_hub",
+  "database": "nep_academic_hub",
+  "collections": {
+    "academiccredits": {
+      "count": 906,
+      "file": "academiccredits.json",
+      "sizeBytes": 802847
+    },
+    "semesterresults": {
+      "count": 900,
+      "file": "semesterresults.json",
+      "sizeBytes": 595150
+    },
+    "resultimportbatches": {
+      "count": 51,
+      "file": "resultimportbatches.json",
+      "sizeBytes": 10184136
+    },
+    "transferrequests": {
+      "count": 3,
+      "file": "transferrequests.json",
+      "sizeBytes": 1960
+    },
+    "certificates": {
+      "count": 1,
+      "file": "certificates.json",
+      "sizeBytes": 945
+    },
+    "auditlogs": {
+      "count": 48,
+      "file": "auditlogs.json",
+      "sizeBytes": 31354
+    },
+    "apilogs": {
+      "count": 10,
+      "file": "apilogs.json",
+      "sizeBytes": 4591
+    },
+    "apikeys": {
+      "count": 9,
+      "file": "apikeys.json",
+      "sizeBytes": 5882
+    },
+    "courses": {
+      "count": 47,
+      "file": "courses.json",
+      "sizeBytes": 20444
+    },
+    "users": {
+      "count": 139,
+      "file": "users.json",
+      "sizeBytes": 73793
+    },
+    "institutions": {
+      "count": 22,
+      "file": "institutions.json",
+      "sizeBytes": 8963
+    },
+    "creditpolicies": {
+      "count": 1,
+      "file": "creditpolicies.json",
+      "sizeBytes": 2099
+    }
+  }
+}

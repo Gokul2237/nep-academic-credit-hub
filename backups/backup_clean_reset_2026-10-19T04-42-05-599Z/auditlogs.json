@@ -1,0 +1,966 @@
+[
+  {
+    "_id": "6ab0bc6f30f55ac5f3563158",
+    "logId": "AUDIT-1789967471822-F514A8",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ab0bc6f30f55ac5f3563156",
+    "details": {
+      "keyId": "NEP-KEY-MUASF0KU-CF7893",
+      "name": "BIT001",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-09-21T05:11:11.824Z",
+    "updatedAt": "2026-09-21T05:11:11.824Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb6eb84a9c2e64ad0f4127",
+    "logId": "AUDIT-1791717048183-B65DE8",
+    "userId": "6acb6eb74a9c2e64ad0f40f7",
+    "institutionId": "6acb6eb74a9c2e64ad0f40f5",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb6eb84a9c2e64ad0f4125",
+    "details": {
+      "keyId": "NEP-KEY-MV3Q2ICZ-9313A1",
+      "name": "B2B Integration Key Test",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:10:48.185Z",
+    "updatedAt": "2026-10-11T11:10:48.185Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb6eb84a9c2e64ad0f413b",
+    "logId": "AUDIT-1791717048244-280248",
+    "userId": "6acb6eb74a9c2e64ad0f40f7",
+    "institutionId": "6acb6eb74a9c2e64ad0f40f5",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6acb6eb84a9c2e64ad0f4125",
+    "details": {
+      "keyId": "NEP-KEY-MV3Q2ICZ-9313A1",
+      "name": "B2B Integration Key Test"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:10:48.246Z",
+    "updatedAt": "2026-10-11T11:10:48.246Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb71d444bd8d93af5661a5",
+    "logId": "LOG-TR-1791717844302-533",
+    "userId": "6acb71d244bd8d93af566148",
+    "institutionId": "6acb71d244bd8d93af566146",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb71d444bd8d93af56617d",
+    "details": {
+      "transferId": "6acb71d444bd8d93af56617d",
+      "studentId": "6acb71d344bd8d93af566152",
+      "sourceInstitutionId": "6acb71d244bd8d93af566140",
+      "destinationInstitutionId": "6acb71d244bd8d93af566146",
+      "status": "APPROVED",
+      "remarks": "Academic credits accepted per NEP 2020 equivalency rules.",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:24:04.302Z",
+    "updatedAt": "2026-10-11T11:24:04.302Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb71d444bd8d93af5661be",
+    "logId": "LOG-TR-1791717844342-136",
+    "userId": "6acb71d244bd8d93af566142",
+    "institutionId": "6acb71d244bd8d93af566140",
+    "action": "TRANSFER_REJECTED",
+    "resource": "TransferRequest:6acb71d444bd8d93af5661b3",
+    "details": {
+      "transferId": "6acb71d444bd8d93af5661b3",
+      "studentId": "6acb71d344bd8d93af566156",
+      "sourceInstitutionId": "6acb71d244bd8d93af566146",
+      "destinationInstitutionId": "6acb71d244bd8d93af566140",
+      "status": "REJECTED",
+      "remarks": "",
+      "rejectionReason": "Syllabus mismatch exceeds 30% limit."
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:24:04.343Z",
+    "updatedAt": "2026-10-11T11:24:04.343Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb736c44bd8d93af56624f",
+    "logId": "LOG-TR-1791718252061-110",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb736b44bd8d93af566230",
+    "details": {
+      "transferId": "6acb736b44bd8d93af566230",
+      "studentId": "6acb736b44bd8d93af56620b",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Approved by Kongu Academic Board per NEP 2020 equivalency matrix.",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:30:52.062Z",
+    "updatedAt": "2026-10-11T11:30:52.062Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb736c44bd8d93af566270",
+    "logId": "LOG-TR-1791718252147-557",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_REJECTED",
+    "resource": "TransferRequest:6acb736c44bd8d93af566263",
+    "details": {
+      "transferId": "6acb736c44bd8d93af566263",
+      "studentId": "6acb736b44bd8d93af56620b",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "REJECTED",
+      "remarks": "",
+      "rejectionReason": "Course syllabus content overlap is below 60% requirement."
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:30:52.149Z",
+    "updatedAt": "2026-10-11T11:30:52.149Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb742744bd8d93af5662b6",
+    "logId": "AUDIT-1791718439431-528715",
+    "userId": "6acb742644bd8d93af566286",
+    "institutionId": "6acb742644bd8d93af566284",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb742744bd8d93af5662b4",
+    "details": {
+      "keyId": "NEP-KEY-MV3QWBUQ-08118D",
+      "name": "B2B Integration Key Test",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:33:59.431Z",
+    "updatedAt": "2026-10-11T11:33:59.431Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb742744bd8d93af5662ca",
+    "logId": "AUDIT-1791718439467-F45F75",
+    "userId": "6acb742644bd8d93af566286",
+    "institutionId": "6acb742644bd8d93af566284",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6acb742744bd8d93af5662b4",
+    "details": {
+      "keyId": "NEP-KEY-MV3QWBUQ-08118D",
+      "name": "B2B Integration Key Test"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:33:59.468Z",
+    "updatedAt": "2026-10-11T11:33:59.468Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb76d044bd8d93af5663d3",
+    "logId": "LOG-TR-1791719120201-806",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb768c44bd8d93af566350",
+    "details": {
+      "transferId": "6acb768c44bd8d93af566350",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "CB",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T11:45:20.202Z",
+    "updatedAt": "2026-10-11T11:45:20.202Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb7e56bb13c1e2c440c9d9",
+    "logId": "LOG-TR-1791721046191-569",
+    "userId": "6acb7e53bb13c1e2c440c97c",
+    "institutionId": "6acb7e53bb13c1e2c440c97a",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb7e56bb13c1e2c440c9b1",
+    "details": {
+      "transferId": "6acb7e56bb13c1e2c440c9b1",
+      "studentId": "6acb7e54bb13c1e2c440c986",
+      "sourceInstitutionId": "6acb7e52bb13c1e2c440c974",
+      "destinationInstitutionId": "6acb7e53bb13c1e2c440c97a",
+      "status": "APPROVED",
+      "remarks": "Academic credits accepted per NEP 2020 equivalency rules.",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:17:26.193Z",
+    "updatedAt": "2026-10-11T12:17:26.193Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb7e56bb13c1e2c440c9f2",
+    "logId": "LOG-TR-1791721046261-438",
+    "userId": "6acb7e52bb13c1e2c440c976",
+    "institutionId": "6acb7e52bb13c1e2c440c974",
+    "action": "TRANSFER_REJECTED",
+    "resource": "TransferRequest:6acb7e56bb13c1e2c440c9e7",
+    "details": {
+      "transferId": "6acb7e56bb13c1e2c440c9e7",
+      "studentId": "6acb7e54bb13c1e2c440c98a",
+      "sourceInstitutionId": "6acb7e53bb13c1e2c440c97a",
+      "destinationInstitutionId": "6acb7e52bb13c1e2c440c974",
+      "status": "REJECTED",
+      "remarks": "",
+      "rejectionReason": "Syllabus mismatch exceeds 30% limit."
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:17:26.263Z",
+    "updatedAt": "2026-10-11T12:17:26.263Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb7e60bb13c1e2c440ca69",
+    "logId": "AUDIT-1791721056301-BA89FE",
+    "userId": "6acb7e5fbb13c1e2c440ca39",
+    "institutionId": "6acb7e5fbb13c1e2c440ca37",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb7e60bb13c1e2c440ca67",
+    "details": {
+      "keyId": "NEP-KEY-MV3SGF1J-25C4E6",
+      "name": "B2B Integration Key Test",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:17:36.303Z",
+    "updatedAt": "2026-10-11T12:17:36.303Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb7e60bb13c1e2c440ca7d",
+    "logId": "AUDIT-1791721056367-F3115B",
+    "userId": "6acb7e5fbb13c1e2c440ca39",
+    "institutionId": "6acb7e5fbb13c1e2c440ca37",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6acb7e60bb13c1e2c440ca67",
+    "details": {
+      "keyId": "NEP-KEY-MV3SGF1J-25C4E6",
+      "name": "B2B Integration Key Test"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:17:36.369Z",
+    "updatedAt": "2026-10-11T12:17:36.369Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb85c885f587aebf685682",
+    "logId": "AUDIT-1791722952267-120F47",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb85c885f587aebf685680",
+    "details": {
+      "keyId": "NEP-KEY-MV3TL1Z9-EC87FB",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:49:12.269Z",
+    "updatedAt": "2026-10-11T12:49:12.269Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb85ff4582fbdbcf930410",
+    "logId": "AUDIT-1791723007641-597D25",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb85ff4582fbdbcf93040e",
+    "details": {
+      "keyId": "NEP-KEY-MV3TM8PH-76C66C",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:50:07.642Z",
+    "updatedAt": "2026-10-11T12:50:07.642Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb865333bbfec7000c3fb0",
+    "logId": "AUDIT-1791723091119-5150DD",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb865333bbfec7000c3fae",
+    "details": {
+      "keyId": "NEP-KEY-MV3TO14B-35F8BB",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:51:31.120Z",
+    "updatedAt": "2026-10-11T12:51:31.120Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb865333bbfec7000c3fc3",
+    "logId": "AUDIT-1791723091151-C3A38F",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6acb865333bbfec7000c3fae",
+    "details": {
+      "keyId": "NEP-KEY-MV3TO14B-35F8BB",
+      "name": "Automated Test Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:51:31.152Z",
+    "updatedAt": "2026-10-11T12:51:31.152Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb86e8633bfac2d5568cec",
+    "logId": "AUDIT-1791723240735-91D3EA",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6acb86e8633bfac2d5568cea",
+    "details": {
+      "keyId": "NEP-KEY-MV3TR8KB-9F83AE",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:54:00.736Z",
+    "updatedAt": "2026-10-11T12:54:00.736Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb86e8633bfac2d5568cff",
+    "logId": "AUDIT-1791723240771-6C8F55",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6acb86e8633bfac2d5568cea",
+    "details": {
+      "keyId": "NEP-KEY-MV3TR8KB-9F83AE",
+      "name": "Automated Test Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:54:00.772Z",
+    "updatedAt": "2026-10-11T12:54:00.772Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb86e8633bfac2d5568d42",
+    "logId": "LOG-TR-1791723240910-164",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb86e8633bfac2d5568d36",
+    "details": {
+      "transferId": "6acb86e8633bfac2d5568d36",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Course syllabus equivalency evaluated and verified under NEP 2020 framework",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T12:54:00.911Z",
+    "updatedAt": "2026-10-11T12:54:00.911Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb88e660238ff3bb19dece",
+    "logId": "LOG-TR-1791723750212-265",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acb865333bbfec7000c3ffa",
+    "details": {
+      "transferId": "6acb865333bbfec7000c3ffa",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-11T13:02:30.216Z",
+    "updatedAt": "2026-10-11T13:02:30.216Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace0408e58159e7825efc6e",
+    "logId": "LOG-TR-1791886344559-769",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_REJECTED",
+    "resource": "TransferRequest:6ace0408e58159e7825efc63",
+    "details": {
+      "transferId": "6ace0408e58159e7825efc63",
+      "studentId": "6ab0b23c33bd480c7eb1b004",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "REJECTED",
+      "remarks": "",
+      "rejectionReason": "Course syllabus equivalency falls below 80% threshold"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T10:12:24.561Z",
+    "updatedAt": "2026-10-13T10:12:24.561Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace0408e58159e7825efc88",
+    "logId": "LOG-TR-1791886344638-356",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6ace0408e58159e7825efc7c",
+    "details": {
+      "transferId": "6ace0408e58159e7825efc7c",
+      "studentId": "6ab0b23c33bd480c7eb1b004",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Course syllabus fully evaluated and accredited under NEP 2020 framework",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T10:12:24.640Z",
+    "updatedAt": "2026-10-13T10:12:24.640Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace0408e58159e7825efcd1",
+    "logId": "AUDIT-1791886344885-FE8741",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ace0408e58159e7825efccf",
+    "details": {
+      "keyId": "NEP-KEY-MV6IV4J4-A38FA3",
+      "name": "Audit Temporary Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T10:12:24.887Z",
+    "updatedAt": "2026-10-13T10:12:24.887Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace0409e58159e7825efce4",
+    "logId": "AUDIT-1791886345009-44C7C9",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6ace0408e58159e7825efccf",
+    "details": {
+      "keyId": "NEP-KEY-MV6IV4J4-A38FA3",
+      "name": "Audit Temporary Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T10:12:25.011Z",
+    "updatedAt": "2026-10-13T10:12:25.011Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace118418f9427acb8aae52",
+    "logId": "LOG-POL-1791889796402-722",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v2.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "createdAt": "2026-10-13T11:09:56.404Z",
+    "updatedAt": "2026-10-13T11:09:56.404Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace13d618f9427acb8aaf45",
+    "logId": "AUDIT-1791890390655-EDE283",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ace13d618f9427acb8aaf43",
+    "details": {
+      "keyId": "NEP-KEY-MV6L9U9O-1DC1BB",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:19:50.656Z",
+    "updatedAt": "2026-10-13T11:19:50.656Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace13d618f9427acb8aaf58",
+    "logId": "AUDIT-1791890390697-75494C",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6ace13d618f9427acb8aaf43",
+    "details": {
+      "keyId": "NEP-KEY-MV6L9U9O-1DC1BB",
+      "name": "Automated Test Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:19:50.698Z",
+    "updatedAt": "2026-10-13T11:19:50.698Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace13d618f9427acb8aaf9b",
+    "logId": "LOG-TR-1791890390849-190",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6ace13d618f9427acb8aaf8f",
+    "details": {
+      "transferId": "6ace13d618f9427acb8aaf8f",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Course syllabus equivalency evaluated and verified under NEP 2020 framework",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:19:50.850Z",
+    "updatedAt": "2026-10-13T11:19:50.850Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace153118f9427acb8ab042",
+    "logId": "AUDIT-1791890737296-FDBA14",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ace153118f9427acb8ab040",
+    "details": {
+      "keyId": "NEP-KEY-MV6LH9QL-DE760B",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:25:37.297Z",
+    "updatedAt": "2026-10-13T11:25:37.297Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace153118f9427acb8ab055",
+    "logId": "AUDIT-1791890737342-ADF43E",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6ace153118f9427acb8ab040",
+    "details": {
+      "keyId": "NEP-KEY-MV6LH9QL-DE760B",
+      "name": "Automated Test Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:25:37.343Z",
+    "updatedAt": "2026-10-13T11:25:37.343Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace153118f9427acb8ab098",
+    "logId": "LOG-TR-1791890737465-409",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6ace153118f9427acb8ab08c",
+    "details": {
+      "transferId": "6ace153118f9427acb8ab08c",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Course syllabus equivalency evaluated and verified under NEP 2020 framework",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:25:37.466Z",
+    "updatedAt": "2026-10-13T11:25:37.466Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace1a9d8829a7fff6d54fe9",
+    "logId": "AUDIT-1791892125213-F173AD",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ace1a9d8829a7fff6d54fe7",
+    "details": {
+      "keyId": "NEP-KEY-MV6MB0NU-D6F20B",
+      "name": "Automated Test Partner Gateway Key",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:48:45.215Z",
+    "updatedAt": "2026-10-13T11:48:45.215Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace1a9d8829a7fff6d54ffc",
+    "logId": "AUDIT-1791892125252-79867E",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "REVOKE_API_KEY",
+    "resource": "APIKey:6ace1a9d8829a7fff6d54fe7",
+    "details": {
+      "keyId": "NEP-KEY-MV6MB0NU-D6F20B",
+      "name": "Automated Test Partner Gateway Key"
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:48:45.253Z",
+    "updatedAt": "2026-10-13T11:48:45.253Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace1a9d8829a7fff6d5503f",
+    "logId": "LOG-TR-1791892125427-603",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6ace1a9d8829a7fff6d55033",
+    "details": {
+      "transferId": "6ace1a9d8829a7fff6d55033",
+      "studentId": "6ab0b2be33bd480c7eb1b05e",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "Course syllabus equivalency evaluated and verified under NEP 2020 framework",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T11:48:45.428Z",
+    "updatedAt": "2026-10-13T11:48:45.428Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace2483411e699e336a94fa",
+    "logId": "LOG-POL-1791894659936-777",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v3.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T12:30:59.941Z",
+    "updatedAt": "2026-10-13T12:30:59.941Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace2488411e699e336a94ff",
+    "logId": "LOG-POL-1791894664284-250",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v4.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T12:31:04.286Z",
+    "updatedAt": "2026-10-13T12:31:04.286Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace25b2411e699e336a964a",
+    "logId": "LOG-POL-1791894962401-934",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v5.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T12:36:02.403Z",
+    "updatedAt": "2026-10-13T12:36:02.403Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace2631411e699e336a964f",
+    "logId": "LOG-POL-1791895089727-816",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v6.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T12:38:09.729Z",
+    "updatedAt": "2026-10-13T12:38:09.729Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace2a62411e699e336a982a",
+    "logId": "LOG-POL-1791896162402-858",
+    "userId": "6ab0b4730fa4cc6dcfeb502d",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "POLICY_VERSION_PUBLISHED",
+    "resource": "CreditPolicy:6ace118418f9427acb8aae50",
+    "details": {
+      "institutionId": "6ab0b18233bd480c7eb1afd0",
+      "version": "v7.0",
+      "minGrade": "B",
+      "minEquivalency": 80,
+      "maxCredits": 60
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T12:56:02.405Z",
+    "updatedAt": "2026-10-13T12:56:02.405Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ace507741efc0ebc20acd5e",
+    "logId": "AUDIT-1791905911651-0CFDCA",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "GENERATE_API_KEY",
+    "resource": "APIKey:6ace507741efc0ebc20acd5c",
+    "details": {
+      "keyId": "NEP-KEY-MV6UIIBL-887391",
+      "name": "Verification",
+      "scopes": [
+        "read:credits",
+        "submit:credits",
+        "verify:certificates",
+        "read:students"
+      ]
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-13T15:38:31.653Z",
+    "updatedAt": "2026-10-13T15:38:31.653Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acf21230ca240a596645bb2",
+    "logId": "LOG-TR-1791959331896-827",
+    "userId": "6ab0b1f033bd480c7eb1affe",
+    "institutionId": "6ab0b1f033bd480c7eb1affc",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6acf208e0ca240a596645aa7",
+    "details": {
+      "transferId": "6acf208e0ca240a596645aa7",
+      "studentId": "6ab0b23c33bd480c7eb1b004",
+      "sourceInstitutionId": "6ab0b18233bd480c7eb1afd0",
+      "destinationInstitutionId": "6ab0b1f033bd480c7eb1affc",
+      "status": "APPROVED",
+      "remarks": "",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-14T06:28:51.899Z",
+    "updatedAt": "2026-10-14T06:28:51.899Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ad4ea6da4e065520f1400c1",
+    "logId": "LOG-RESET-1792338541756-9116",
+    "action": "DEMO_ACADEMIC_RESET",
+    "resource": "AcademicCredit,User,TransferRequest,Transcript",
+    "details": {
+      "studentsReset": 109,
+      "creditsDeleted": 32,
+      "transfersReset": 1,
+      "transcriptsReset": 14,
+      "newCurrentSemester": 1,
+      "reason": "User-authorized demo academic reset for semester results import and progression setup",
+      "timestamp": "2026-10-18T15:49:01.756Z"
+    },
+    "ipAddress": "127.0.0.1",
+    "createdAt": "2026-10-18T15:49:01.765Z",
+    "updatedAt": "2026-10-18T15:49:01.765Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ad4ed776acab901276dc1e6",
+    "logId": "LOG-TR-1792339319111-274",
+    "userId": "6ad4ed726acab901276dc177",
+    "institutionId": "6ad4ed726acab901276dc175",
+    "action": "TRANSFER_APPROVED",
+    "resource": "TransferRequest:6ad4ed766acab901276dc1be",
+    "details": {
+      "transferId": "6ad4ed766acab901276dc1be",
+      "studentId": "6ad4ed746acab901276dc181",
+      "sourceInstitutionId": "6ad4ed726acab901276dc16f",
+      "destinationInstitutionId": "6ad4ed726acab901276dc175",
+      "status": "APPROVED",
+      "remarks": "Academic credits accepted per NEP 2020 equivalency rules.",
+      "rejectionReason": ""
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-18T16:01:59.113Z",
+    "updatedAt": "2026-10-18T16:01:59.113Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ad4ed776acab901276dc1ff",
+    "logId": "LOG-TR-1792339319191-242",
+    "userId": "6ad4ed726acab901276dc171",
+    "institutionId": "6ad4ed726acab901276dc16f",
+    "action": "TRANSFER_REJECTED",
+    "resource": "TransferRequest:6ad4ed776acab901276dc1f4",
+    "details": {
+      "transferId": "6ad4ed776acab901276dc1f4",
+      "studentId": "6ad4ed756acab901276dc185",
+      "sourceInstitutionId": "6ad4ed726acab901276dc175",
+      "destinationInstitutionId": "6ad4ed726acab901276dc16f",
+      "status": "REJECTED",
+      "remarks": "",
+      "rejectionReason": "Syllabus mismatch exceeds 30% limit."
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-18T16:01:59.192Z",
+    "updatedAt": "2026-10-18T16:01:59.192Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ad501f66fccefea0239d2fe",
+    "logId": "LOG-IMPORT-1792344566196-980",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "RESULTS_IMPORTED",
+    "resource": "ResultImportBatch:6ad4ff625159868e2ff7c25c",
+    "details": {
+      "batchId": "BATCH-1792343906395-Y8ZTK",
+      "academicYear": "2024-25",
+      "semester": 1,
+      "totalRows": 450,
+      "processedRows": 450,
+      "creditsAwardedCount": 450,
+      "creditPointsTotal": 1350,
+      "studentsAdvanced": 50
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-18T17:29:26.200Z",
+    "updatedAt": "2026-10-18T17:29:26.200Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ad5029d6fccefea0239dcbf",
+    "logId": "LOG-IMPORT-1792344733007-586",
+    "userId": "6ab0b18233bd480c7eb1afd2",
+    "institutionId": "6ab0b18233bd480c7eb1afd0",
+    "action": "RESULTS_IMPORTED",
+    "resource": "ResultImportBatch:6ad4fda15159868e2ff7c113",
+    "details": {
+      "batchId": "BATCH-1792343457427-6U4UE",
+      "academicYear": "2023-24",
+      "semester": 1,
+      "totalRows": 450,
+      "processedRows": 450,
+      "creditsAwardedCount": 450,
+      "creditPointsTotal": 1350,
+      "studentsAdvanced": 0
+    },
+    "ipAddress": "::1",
+    "createdAt": "2026-10-18T17:32:13.009Z",
+    "updatedAt": "2026-10-18T17:32:13.009Z",
+    "__v": 0
+  }
+]
