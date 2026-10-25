@@ -34,6 +34,7 @@ const StudentTranscriptPage = lazy(() => import('./pages/student/StudentTranscri
 const StudentCertificatesPage = lazy(() => import('./pages/student/StudentCertificatesPage'));
 const StudentEligibilityPage = lazy(() => import('./pages/student/StudentEligibilityPage'));
 const StudentPathwayPage = lazy(() => import('./pages/student/StudentPathwayPage'));
+const StudentRoadmapPage = lazy(() => import('./pages/student/StudentRoadmapPage'));
 const StudentRecommendationsPage = lazy(() => import('./pages/student/StudentRecommendationsPage'));
 const StudentSimulatorPage = lazy(() => import('./pages/student/StudentSimulatorPage'));
 const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage'));
@@ -396,6 +397,16 @@ export default function App() {
             <Route
               path="pathway"
               element={<StudentPathwayPage />}
+            />
+
+            <Route
+              path="roadmap"
+              element={<StudentRoadmapPage />}
+            />
+
+            <Route
+              path="readiness-roadmap"
+              element={<StudentRoadmapPage />}
             />
 
             <Route

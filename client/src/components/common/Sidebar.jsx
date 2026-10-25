@@ -8,6 +8,7 @@ import {
   Clock,
   CheckCircle,
   GitFork,
+  Compass,
   Sparkles,
   ArrowRightLeft,
   Award,
@@ -61,6 +62,11 @@ const studentNavItems = [
     name: 'Academic Pathway',
     path: '/student/pathway',
     icon: GitFork,
+  },
+  {
+    name: 'Readiness & Roadmap',
+    path: '/student/roadmap',
+    icon: Compass,
   },
   {
     name: 'Course Recommendations',

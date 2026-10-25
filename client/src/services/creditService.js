@@ -48,4 +48,10 @@ export const creditService = {
     const response = await api.get('/credits/semester-results');
     return response.data;
   },
+
+  // Get Student Transfer Readiness and Personalized Academic Roadmap
+  getReadinessRoadmap: async (params = {}) => {
+    const response = await api.get('/students/readiness-roadmap/me', { params });
+    return response.data;
+  },
 };

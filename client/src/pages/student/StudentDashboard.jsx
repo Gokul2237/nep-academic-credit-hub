@@ -15,20 +15,24 @@ import {
   AlertCircle,
   GraduationCap,
   Award,
+  Compass,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [wallet, setWallet] = useState(null);
   const [semesterData, setSemesterData] = useState(null);
+  const [roadmapSummary, setRoadmapSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.allSettled([
       creditService.getWalletSummary(),
       creditService.getSemesterResults(),
+      creditService.getReadinessRoadmap(),
     ])
-      .then(([walletRes, semRes]) => {
+      .then(([walletRes, semRes, roadmapRes]) => {
         if (walletRes.status === 'fulfilled' && walletRes.value) {
           setWallet(walletRes.value);
         } else {
@@ -38,6 +42,11 @@ export default function StudentDashboard() {
         if (semRes.status === 'fulfilled' && semRes.value?.data) {
           setSemesterData(semRes.value.data);
         }
+
+        if (roadmapRes.status === 'fulfilled' && roadmapRes.value?.data) {
+          setRoadmapSummary(roadmapRes.value.data);
+        }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -123,6 +132,13 @@ export default function StudentDashboard() {
 
           <div className="flex items-center space-x-3">
             <Link
+              to="/student/roadmap"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center space-x-2"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Readiness & Roadmap</span>
+            </Link>
+            <Link
               to="/student/wallet"
               className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/20 transition flex items-center space-x-2"
             >
@@ -169,6 +185,69 @@ export default function StudentDashboard() {
             </div>
           );
         })}
+      </div>
+
+      {/* Credit Transfer Readiness & Personalized Academic Roadmap Feature Card */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-indigo-500/30 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <Compass className="w-4 h-4" />
+              <span>Credit Transfer Readiness & Personalized Academic Roadmap</span>
+            </div>
+            <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+              <span>Transfer Mobility Readiness:</span>
+              {roadmapSummary?.summary?.overallReadiness === 'READY' ? (
+                <span className="text-emerald-400 font-bold">Ready for Transfer</span>
+              ) : roadmapSummary?.summary?.overallReadiness === 'NEEDS_REVIEW' ? (
+                <span className="text-amber-400 font-bold">Review Required</span>
+              ) : (
+                <span className="text-slate-300 font-bold">Analysis Available</span>
+              )}
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
+              {roadmapSummary?.summary?.overallReadinessSummary ||
+                'Deterministic, policy-driven evaluation of your verified academic credits against receiving institution rules and NEP 2020 graduation benchmarks.'}
+            </p>
+          </div>
+
+          <Link
+            to="/student/roadmap"
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center space-x-2 self-start sm:self-auto shrink-0"
+          >
+            <span>Open Personalized Roadmap</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {roadmapSummary && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-800/80 text-xs">
+            <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span className="text-slate-400 text-[11px] block">Transfer Eligible</span>
+              <span className="text-base font-bold text-blue-400">
+                {roadmapSummary.readiness?.eligibleCredits || 0} Credits
+              </span>
+            </div>
+            <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span className="text-slate-400 text-[11px] block">Degree Credit Gap</span>
+              <span className="text-base font-bold text-amber-400">
+                {roadmapSummary.readiness?.degreeCreditGap ?? 140} Credits
+              </span>
+            </div>
+            <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span className="text-slate-400 text-[11px] block">Verified Earned</span>
+              <span className="text-base font-bold text-emerald-400">
+                {roadmapSummary.summary?.verifiedCredits || 0} Credits
+              </span>
+            </div>
+            <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span className="text-slate-400 text-[11px] block">Active Policy</span>
+              <span className="text-base font-bold text-purple-400 truncate block">
+                {roadmapSummary.targetPolicy?.version || 'NEP Baseline'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Semester-wise Academic Results & Progression Section */}
