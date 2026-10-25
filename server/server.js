@@ -37,6 +37,7 @@ const recommendationRoutes = require('./routes/recommendationRoutes');
 const gatewayRoutes = require('./routes/gatewayRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const institutionRoutes = require('./routes/institutionRoutes');
+const roadmapRoutes = require('./routes/roadmapRoutes');
 // ============================================================
 // ADMIN BOOTSTRAP
 // ============================================================
@@ -231,6 +232,11 @@ app.use(
  *   GET /api/v1/students
  *
  */
+
+app.use('/api/students/readiness-roadmap', roadmapRoutes);
+app.use('/api/v1/students/readiness-roadmap', roadmapRoutes);
+app.use('/api/roadmap', roadmapRoutes);
+app.use('/api/v1/roadmap', roadmapRoutes);
 
 app.use('/api/students', studentRoutes);
 app.use('/api/v1/students', studentRoutes);
