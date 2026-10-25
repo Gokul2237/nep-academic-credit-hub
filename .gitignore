@@ -16,6 +16,10 @@ dist/
 build/
 out/
 
+# Database Backups & Snapshots
+backups/
+*.dump
+
 # Logs
 logs
 *.log

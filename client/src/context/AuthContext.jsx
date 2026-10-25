@@ -74,6 +74,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const data = await authService.login(email, password);
 
+    if (!data || !data.user) {
+      throw new Error('Authentication session error: User profile data is missing.');
+    }
+
     setUser(data.user);
     setToken(data.token);
 
@@ -86,6 +90,10 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const data = await authService.register(userData);
+
+    if (!data || !data.user) {
+      throw new Error('Registration session error: User profile data is missing.');
+    }
 
     setUser(data.user);
     setToken(data.token);

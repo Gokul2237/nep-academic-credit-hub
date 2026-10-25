@@ -4,27 +4,43 @@ export const authService = {
   // Login existing user
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    if (response.data?.token) {
-      localStorage.setItem('nep_token', response.data.token);
-      localStorage.setItem('nep_user', JSON.stringify(response.data.user));
+    // Backend standard ApiResponse.success wraps payload in { success: true, message: '...', data: { user, token } }
+    // After Axios response interceptor unwraps response.data, 'response' contains the parsed JSON body
+    const authData = response?.data || response;
+
+    if (!authData || typeof authData !== 'object' || !authData.token || !authData.user) {
+      throw new Error(
+        response?.message || 'Authentication failed: Server returned an invalid or empty session payload.'
+      );
     }
-    return response.data;
+
+    localStorage.setItem('nep_token', authData.token);
+    localStorage.setItem('nep_user', JSON.stringify(authData.user));
+
+    return authData;
   },
 
   // Register new user (Student or Institution)
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
-    if (response.data?.token) {
-      localStorage.setItem('nep_token', response.data.token);
-      localStorage.setItem('nep_user', JSON.stringify(response.data.user));
+    const authData = response?.data || response;
+
+    if (!authData || typeof authData !== 'object' || !authData.token || !authData.user) {
+      throw new Error(
+        response?.message || 'Registration failed: Server returned an invalid or empty session payload.'
+      );
     }
-    return response.data;
+
+    localStorage.setItem('nep_token', authData.token);
+    localStorage.setItem('nep_user', JSON.stringify(authData.user));
+
+    return authData;
   },
 
   // Get current authenticated user profile
   getMe: async () => {
     const response = await api.get('/auth/me');
-    return response.data?.user;
+    return response?.data?.user || response?.user || null;
   },
 
   // Logout and clear local storage
