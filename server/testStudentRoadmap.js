@@ -9,6 +9,10 @@ const CreditPolicy = require('./models/CreditPolicy');
 const { generateCreditHash } = require('./utils/hashHelper');
 
 let serverInstance = null;
+const createdArtifacts = {
+  credits: [],
+  users: [],
+};
 
 // Helper: HTTP request wrapper
 const makeRequest = (options, postData = null) => {
@@ -135,7 +139,7 @@ async function runRoadmapTests() {
       (i) => (i._id || i.id).toString() !== student1Auth.user.institutionId?.toString()
     ) || institutions[1];
 
-    console.log(`\n🎯 Selected Target Destination Institution: ${destInst.name} (${destInst.code})`);
+    console.log(`🎯 Selected Target Destination Institution: ${destInst.name} (${destInst.code})`);
 
     // SECTION 1: Student 1 Self-Roadmap Evaluation
     console.log('\n--- SECTION 1: Student 1 Self-Roadmap & Readiness Evaluation ---');
@@ -262,15 +266,192 @@ async function runRoadmapTests() {
       assert(Boolean(sampleCredit.awardingInstitution), 'Evaluated credit lists awarding institution');
     }
 
+    // SECTION 6: Zero-Credit Student & Incomplete Records Handling
+    console.log('\n--- SECTION 6: Zero-Credit Account & Edge Case Handling ---');
+    // Register a fresh zero-credit student
+    const freshStudentEmail = `freshstudent_${Date.now()}@example.com`;
+    const regRes = await makeRequest(
+      {
+        hostname: 'localhost',
+        port: 5000,
+        path: '/api/auth/register',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+      {
+        name: 'New Enrolled Student',
+        email: freshStudentEmail,
+        password: 'Password@123',
+        role: 'student',
+        institutionId: student1Auth.user.institutionId,
+        studentId: `ABC-TEST-${Date.now().toString().slice(-6)}`,
+      }
+    );
+
+    assert(regRes.status === 201, 'Fresh student account created');
+    const freshToken = regRes.body.data.token;
+    const freshUser = regRes.body.data.user;
+    createdArtifacts.users.push(freshUser._id || freshUser.id);
+
+    const freshRoadmapRes = await makeRequest({
+      hostname: 'localhost',
+      port: 5000,
+      path: '/api/students/readiness-roadmap/me',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${freshToken}` },
+    });
+
+    assert(freshRoadmapRes.status === 200, 'Fresh zero-credit student roadmap returns 200');
+    const freshRoadmap = freshRoadmapRes.body.data;
+    assert(freshRoadmap.summary.verifiedCredits === 0, 'Zero verified credits reported');
+    assert(freshRoadmap.summary.overallReadiness === 'INSUFFICIENT_INFO', 'Zero credit student marked INSUFFICIENT_INFO');
+    assert(freshRoadmap.readiness.degreeCreditGap === 160, 'Degree credit gap equals full 160 credits required');
+    assert(freshRoadmap.readiness.evaluatedCredits.length === 0, 'Evaluated credits array is empty');
+    console.log(`   Fresh Student Status: ${freshRoadmap.summary.overallReadiness} - "${freshRoadmap.summary.overallReadinessSummary}"`);
+
+    // SECTION 7: Low Grade, Unverified, and Already Transferred Credit Policies
+    console.log('\n--- SECTION 7: Low Grade, Unverified, and Transferred Credit Rules ---');
+
+    // Fetch an active course
+    const sampleCourses = await Course.find({ institutionId: student1Auth.user.institutionId, isActive: true }).limit(3);
+    assert(sampleCourses.length >= 3, 'Course found for edge-case credit testing');
+
+    // 7.1 Create a Low Grade credit (Grade C, below target policy minimum B)
+    const testHashLowGrade = generateCreditHash({
+      studentId: freshUser._id,
+      courseId: sampleCourses[0]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 4,
+      grade: 'C',
+      semester: 1,
+      academicYear: '2024-25',
+    });
+
+    const lowGradeCredit = await AcademicCredit.create({
+      studentId: freshUser._id,
+      courseId: sampleCourses[0]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 4,
+      grade: 'C',
+      semester: 1,
+      academicYear: '2024-25',
+      verificationStatus: 'verified',
+      integrityHash: testHashLowGrade,
+    });
+    createdArtifacts.credits.push(lowGradeCredit._id);
+
+    // 7.2 Create an Unverified credit (Status pending)
+    const testHashPending = generateCreditHash({
+      studentId: freshUser._id,
+      courseId: sampleCourses[1]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 3,
+      grade: 'A',
+      semester: 1,
+      academicYear: '2024-25',
+    });
+
+    const pendingCredit = await AcademicCredit.create({
+      studentId: freshUser._id,
+      courseId: sampleCourses[1]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 3,
+      grade: 'A',
+      semester: 1,
+      academicYear: '2024-25',
+      verificationStatus: 'pending',
+      integrityHash: testHashPending,
+    });
+    createdArtifacts.credits.push(pendingCredit._id);
+
+    // 7.3 Create an Already Transferred credit (isTransferred = true)
+    const testHashTransferred = generateCreditHash({
+      studentId: freshUser._id,
+      courseId: sampleCourses[2]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 4,
+      grade: 'O',
+      semester: 1,
+      academicYear: '2024-25',
+    });
+
+    const transferredCredit = await AcademicCredit.create({
+      studentId: freshUser._id,
+      courseId: sampleCourses[2]._id,
+      institutionId: student1Auth.user.institutionId,
+      credits: 4,
+      grade: 'O',
+      semester: 1,
+      academicYear: '2024-25',
+      verificationStatus: 'verified',
+      integrityHash: testHashTransferred,
+      isTransferred: true,
+      transferredTo: destInst._id,
+    });
+    createdArtifacts.credits.push(transferredCredit._id);
+
+    // Re-evaluate fresh student roadmap
+    const edgeRoadmapRes = await makeRequest({
+      hostname: 'localhost',
+      port: 5000,
+      path: `/api/students/readiness-roadmap/me?targetInstitutionId=${destInst._id}`,
+      method: 'GET',
+      headers: { Authorization: `Bearer ${freshToken}` },
+    });
+
+    assert(edgeRoadmapRes.status === 200, 'Edge test evaluation returns 200');
+    const edgeData = edgeRoadmapRes.body.data;
+
+    const evaluatedLowGrade = edgeData.readiness.evaluatedCredits.find(
+      (c) => c.creditId.toString() === lowGradeCredit._id.toString()
+    );
+    assert(Boolean(evaluatedLowGrade), 'Low-grade credit evaluated');
+    assert(evaluatedLowGrade.readinessStatus === 'NOT_ELIGIBLE', 'Low grade C correctly marked NOT_ELIGIBLE against minGrade B');
+    assert(evaluatedLowGrade.reason.includes('below'), 'Reason explains minimum grade threshold');
+
+    const evaluatedPending = edgeData.readiness.evaluatedCredits.find(
+      (c) => c.creditId.toString() === pendingCredit._id.toString()
+    );
+    assert(Boolean(evaluatedPending), 'Pending credit evaluated');
+    assert(evaluatedPending.readinessStatus === 'NEEDS_REVIEW', 'Pending credit correctly marked NEEDS_REVIEW');
+    assert(evaluatedPending.reason.includes('pending'), 'Reason explains pending verification status');
+
+    const evaluatedTransferred = edgeData.readiness.evaluatedCredits.find(
+      (c) => c.creditId.toString() === transferredCredit._id.toString()
+    );
+    assert(Boolean(evaluatedTransferred), 'Transferred credit evaluated');
+    assert(evaluatedTransferred.readinessStatus === 'NOT_ELIGIBLE', 'Already transferred credit correctly marked NOT_ELIGIBLE');
+    assert(evaluatedTransferred.reason.includes('permanently transferred'), 'Reason explains transfer prohibition and double-counting prevention');
+
     console.log('\n================================================================');
     console.log('🎉 ALL ROADMAP & READINESS VERIFICATION TESTS PASSED!');
     console.log(`   Total Tests Passed: ${passedTests}`);
     console.log(`   Total Tests Failed: ${failedTests}`);
     console.log('================================================================\n');
 
+    // Safe Teardown
+    console.log('🧹 Cleaning up test artifacts...');
+    if (createdArtifacts.credits.length > 0) {
+      await AcademicCredit.deleteMany({ _id: { $in: createdArtifacts.credits } });
+      console.log(`   ✓ Cleaned ${createdArtifacts.credits.length} test credit(s)`);
+    }
+    if (createdArtifacts.users.length > 0) {
+      await User.deleteMany({ _id: { $in: createdArtifacts.users } });
+      console.log(`   ✓ Cleaned ${createdArtifacts.users.length} test student(s)`);
+    }
+
     process.exit(0);
   } catch (err) {
     console.error('\n❌ Test Suite Aborted due to error:', err);
+
+    // Teardown on failure
+    if (createdArtifacts.credits.length > 0) {
+      await AcademicCredit.deleteMany({ _id: { $in: createdArtifacts.credits } });
+    }
+    if (createdArtifacts.users.length > 0) {
+      await User.deleteMany({ _id: { $in: createdArtifacts.users } });
+    }
+
     process.exit(1);
   }
 }
