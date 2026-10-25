@@ -24,6 +24,9 @@ export default function LoginPage() {
 
     try {
       const user = await login(formData.email, formData.password);
+      if (!user || !user.role) {
+        throw new Error('Login succeeded, but user role could not be resolved for navigation.');
+      }
       const destination = from || getDashboardRoute(user.role);
       navigate(destination, { replace: true });
     } catch (err) {

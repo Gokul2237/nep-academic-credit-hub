@@ -67,14 +67,39 @@ const PORT = process.env.PORT || 5000;
 // SECURITY
 // ============================================================
 
-app.use(helmet());
+// Allow cross-origin requests from the decoupled frontend while preserving all other security protections
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+// Whitelist exact production frontend and local development origins
+const defaultAllowedOrigins = [
+  'https://nep-academic-credit-hub-1.onrender.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+const envOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((url) => url.trim().replace(/\/+$/, '')).filter(Boolean)
+  : [];
+
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envOrigins]));
 
 app.use(
   cors({
-    origin:
-      process.env.CLIENT_URL ||
-      'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow non-browser requests (e.g. mobile apps, curl, server-to-server health checks)
+      if (!origin) return callback(null, true);
 
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Disallow origin without throwing an unhandled server error
+      return callback(null, false);
+    },
     credentials: true,
   })
 );
