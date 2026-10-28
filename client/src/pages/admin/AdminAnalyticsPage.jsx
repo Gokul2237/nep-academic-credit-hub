@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import {
   BarChart,
@@ -26,6 +28,7 @@ import api from '../../services/api';
 export default function AdminAnalyticsPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchAnalytics();
@@ -34,98 +37,16 @@ export default function AdminAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const [creditsRes, studentsRes, instRes, certsRes] = await Promise.all([
-        api.get('/credits'),
-        api.get('/students'),
-        api.get('/auth/institutions'),
-        api.get('/certificates'),
-      ]);
-
-      const credits = creditsRes.data?.data || creditsRes.data || [];
-      const students = studentsRes.data?.data || studentsRes.data || [];
-      const rawInst =
-        instRes.data?.institutions ||
-        instRes.institutions ||
-        (Array.isArray(instRes.data)
-          ? instRes.data
-          : Array.isArray(instRes)
-          ? instRes
-          : []);
-      const institutions = Array.isArray(rawInst) ? rawInst : [];
-      const certs = certsRes.data?.data || certsRes.data || [];
-
-      // Process Verification Status Distribution
-      const verified = credits.filter((c) => c.verificationStatus === 'verified').length;
-      const pending = credits.filter((c) => c.verificationStatus === 'pending').length;
-      const rejected = credits.filter((c) => c.verificationStatus === 'rejected').length;
-      const totalCreditsCount = credits.length;
-
-      const statusDistribution = [
-        {
-          name: 'Verified',
-          value: verified,
-          color: '#10b981',
-          percent: totalCreditsCount > 0 ? Math.round((verified / totalCreditsCount) * 100) : 0,
-        },
-        {
-          name: 'Pending',
-          value: pending,
-          color: '#f59e0b',
-          percent: totalCreditsCount > 0 ? Math.round((pending / totalCreditsCount) * 100) : 0,
-        },
-        {
-          name: 'Rejected',
-          value: rejected,
-          color: '#f43f5e',
-          percent: totalCreditsCount > 0 ? Math.round((rejected / totalCreditsCount) * 100) : 0,
-        },
-      ];
-
-      // Process Grade Performance Distribution from live credits
-      const gradeCounts = {};
-      credits.forEach((c) => {
-        if (c.grade) {
-          const g = String(c.grade).toUpperCase().trim();
-          gradeCounts[g] = (gradeCounts[g] || 0) + 1;
-        }
-      });
-
-      const gradeOrder = ['O', 'A+', 'A', 'B+', 'B', 'C', 'P'];
-      const gradeDistribution = gradeOrder
-        .filter((g) => gradeCounts[g] !== undefined)
-        .map((g) => ({
-          grade: g,
-          count: gradeCounts[g] || 0,
-        }));
-
-      // Institutional Credit Aggregation from real data
-      const instBreakdown = institutions.map((inst) => {
-        const instCredits = credits.filter(
-          (c) =>
-            c.institutionId?._id?.toString() === inst._id?.toString() ||
-            c.institutionId === inst._id?.toString() ||
-            c.institutionId?.code === inst.code
-        );
-        return {
-          name: inst.name,
-          code: inst.code,
-          students: inst.studentCount || students.filter((s) => s.institutionCode === inst.code).length || 0,
-          creditsCount: instCredits.length,
-          totalPoints: instCredits.reduce((sum, c) => sum + (c.credits || 0), 0),
-        };
-      });
-
-      setStats({
-        totalCredits: totalCreditsCount,
-        totalStudents: students.length,
-        totalInstitutions: institutions.length,
-        totalCertificates: certs.length,
-        statusDistribution,
-        gradeDistribution,
-        instBreakdown,
-      });
+      setError('');
+      // Dedicated server-side aggregation endpoint for complete system-wide analytics
+      const res = await api.get('/admin/analytics/summary');
+      const payload = res.data?.data || res.data || {};
+      setStats(payload);
     } catch (err) {
       console.error('Fetch analytics error:', err);
+      setError(
+        err.response?.data?.message || err.message || 'Failed to retrieve system analytics.'
+      );
     } finally {
       setLoading(false);
     }
@@ -158,10 +79,25 @@ export default function AdminAnalyticsPage() {
         </button>
       </div>
 
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-between text-xs text-rose-300">
+          <div className="flex items-center space-x-2.5">
+            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={fetchAnalytics}
+            className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-lg font-medium transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
             ))}
           </div>
@@ -173,7 +109,8 @@ export default function AdminAnalyticsPage() {
       ) : (
         <>
           {/* 2. Key Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Total Credit Records */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-slate-700 transition">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400">Total Credit Records</span>
@@ -187,6 +124,24 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
 
+            {/* Cumulative Credit Points */}
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-slate-700 transition">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400">Cumulative Points</span>
+                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <p className="text-2xl font-bold text-indigo-400 font-mono">
+                  {stats?.totalCumulativePoints?.toLocaleString() ?? 0}{' '}
+                  <span className="text-xs font-normal text-indigo-300">pts</span>
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Recognized Credits Sum</p>
+              </div>
+            </div>
+
+            {/* Active Students */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-slate-700 transition">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400">Active Students</span>
@@ -200,6 +155,7 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
 
+            {/* Participating Universities */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-slate-700 transition">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400">Participating Universities</span>
@@ -213,6 +169,7 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
 
+            {/* Issued Certificates */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-slate-700 transition">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400">Issued Certificates</span>
@@ -229,7 +186,7 @@ export default function AdminAnalyticsPage() {
 
           {/* 3. Visualizations Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Credit Verification Status Distribution (Fixed Donut Chart with clean breakdown) */}
+            {/* Credit Verification Status Distribution */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="border-b border-slate-800 pb-3">
@@ -245,7 +202,7 @@ export default function AdminAnalyticsPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6 pt-4">
-                    {/* Donut Visualization without colliding text labels */}
+                    {/* Donut Visualization */}
                     <div className="h-56 relative flex items-center justify-center">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -267,7 +224,7 @@ export default function AdminAnalyticsPage() {
                           <Tooltip
                             content={({ active, payload }) => {
                               if (active && payload && payload.length) {
-                                const { name, value, payload: entry } = payload[0];
+                                const { name, value } = payload[0];
                                 const pct = totalCredits > 0 ? ((value / totalCredits) * 100).toFixed(1) : 0;
                                 return (
                                   <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl shadow-xl text-xs space-y-1">
@@ -297,13 +254,6 @@ export default function AdminAnalyticsPage() {
                     {/* Clean Legend Breakdown Table */}
                     <div className="space-y-3">
                       {stats?.statusDistribution?.map((item) => {
-                        const Icon =
-                          item.name === 'Verified'
-                            ? CheckCircle2
-                            : item.name === 'Pending'
-                            ? Clock
-                            : XCircle;
-
                         return (
                           <div
                             key={item.name}
@@ -341,7 +291,7 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
 
-            {/* Academic Grade Distribution (Real BarChart) */}
+            {/* Academic Grade Distribution */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="border-b border-slate-800 pb-3">
@@ -405,7 +355,7 @@ export default function AdminAnalyticsPage() {
                 <div>
                   <h3 className="text-sm font-bold text-white">Institutional Participation Roster</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Participating university nodes with student enrolment and active credit volumes
+                    Participating university nodes with student enrolment, issued credit records, and cumulative credit points
                   </p>
                 </div>
                 <span className="text-xs text-slate-400 font-mono">
@@ -437,6 +387,22 @@ export default function AdminAnalyticsPage() {
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot className="bg-slate-950/80 font-mono text-xs border-t-2 border-slate-700">
+                    <tr>
+                      <td className="px-4 py-3.5 font-bold text-white uppercase" colSpan={2}>
+                        Total / System-Wide
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-bold text-slate-100">
+                        {stats?.totalStudents?.toLocaleString() ?? 0}
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-bold text-emerald-400">
+                        {stats?.totalCredits?.toLocaleString() ?? 0}
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-bold text-purple-300">
+                        {stats?.totalCumulativePoints?.toLocaleString() ?? 0} pts
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>

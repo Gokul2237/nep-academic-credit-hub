@@ -141,7 +141,7 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleDemoFill('bitsathy@gmail.com', '123456')}
+                onClick={() => handleDemoFill('admin@bitsathy.ac.in', '123456')}
                 className="py-2 px-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium transition flex flex-col items-center justify-center space-y-1 group"
               >
                 <Building2 className="w-4 h-4 text-indigo-400 group-hover:scale-105 transition" />
@@ -149,7 +149,7 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleDemoFill('student101@gmail.com', '123456')}
+                onClick={() => handleDemoFill('gokul.k@bitsathy.ac.in', '123456')}
                 className="py-2 px-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-[11px] font-medium transition flex flex-col items-center justify-center space-y-1 group"
               >
                 <UserCheck className="w-4 h-4 text-blue-400 group-hover:scale-105 transition" />

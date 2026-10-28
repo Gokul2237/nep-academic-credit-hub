@@ -15,20 +15,24 @@ const createTransfer = async (req, res) => {
   try {
     const { destinationInstitutionId, creditIds, reason } = req.body;
 
-    // 1. Resolve student
-    let studentId = req.user._id;
-    if (req.user.role === 'admin' && req.body.studentId) {
-      studentId = req.body.studentId;
-    } else if (req.user.role === 'institution') {
-      if (!req.body.studentId) {
-        return ApiResponse.error(
-          res,
-          'Non-student account must specify a valid enrolled student.',
-          403
-        );
-      }
-      studentId = req.body.studentId;
+    // Strict RBAC: Students are not permitted to initiate credit transfer requests
+    if (req.user.role === 'student' || req.user.role === ROLES.STUDENT) {
+      return ApiResponse.error(
+        res,
+        'Access denied: Credit transfer requests must be initiated by authorized institutions or administrators.',
+        403
+      );
     }
+
+    // 1. Resolve student (must be specified by the initiating institution or admin)
+    if (!req.body.studentId) {
+      return ApiResponse.error(
+        res,
+        'Enrolled student ID is required to initiate a transfer.',
+        400
+      );
+    }
+    const studentId = req.body.studentId;
 
     const student = await User.findById(studentId);
     if (!student || student.role !== ROLES.STUDENT) {
@@ -471,14 +475,23 @@ const cancelTransfer = async (req, res) => {
       return ApiResponse.error(res, 'Transfer request not found.', 404);
     }
 
-    // Role check: Student can only cancel their own
+    // Role check: Students cannot manage or cancel transfers
+    if (req.user.role === 'student' || req.user.role === ROLES.STUDENT) {
+      return ApiResponse.error(
+        res,
+        'Access denied: Students are not permitted to manage or cancel transfer requests.',
+        403
+      );
+    }
+
+    // Role check: Institution can only cancel their own outgoing transfer requests
     if (
-      req.user.role === 'student' &&
-      transfer.studentId.toString() !== req.user._id.toString()
+      req.user.role === 'institution' &&
+      transfer.sourceInstitutionId.toString() !== req.user.institutionId.toString()
     ) {
       return ApiResponse.error(
         res,
-        'Access denied: You can only cancel your own transfer requests.',
+        'Access denied: You can only cancel transfer requests initiated by your institution.',
         403
       );
     }

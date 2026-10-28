@@ -1,10 +1,13 @@
 const http = require('http');
 const mongoose = require('mongoose');
-require('./server.js');
+const app = require('./server.js');
+
+const TEST_PORT = 5099;
 
 const makeRequest = (options, postData = null) => {
   return new Promise((resolve, reject) => {
-    const req = http.request(options, (res) => {
+    const opts = { ...options, port: options.port || TEST_PORT };
+    const req = http.request(opts, (res) => {
       let data = '';
       res.on('data', (chunk) => (data += chunk));
       res.on('end', () => {
@@ -28,7 +31,7 @@ async function loginUser(email, password = 'Password@123') {
   let res = await makeRequest(
     {
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/auth/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,7 +44,7 @@ async function loginUser(email, password = 'Password@123') {
     res = await makeRequest(
       {
         hostname: 'localhost',
-        port: 5000,
+        port: TEST_PORT,
         path: '/api/auth/login',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,19 +65,28 @@ async function runInstitutionStatsSuite() {
   }
   await new Promise((r) => setTimeout(r, 300));
 
+  let serverInstance = null;
+  let exitCode = 0;
   try {
+    await new Promise((resolve, reject) => {
+      serverInstance = app.listen(TEST_PORT, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+      serverInstance.on('error', reject);
+    });
     // -------------------------------------------------------------
     // Test 1: BIT001 Overview Statistics Verification
     // -------------------------------------------------------------
     console.log('1️⃣  Testing BIT001 Overview Statistics...');
-    const bitToken = await loginUser('bitsathy@gmail.com');
+    const bitToken = await loginUser('admin@bitsathy.ac.in');
     if (!bitToken) {
-      throw new Error('Failed to login as BIT001 (bitsathy@gmail.com)');
+      throw new Error('Failed to login as BIT001 (admin@bitsathy.ac.in)');
     }
 
     const bitRes = await makeRequest({
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/institution/overview',
       method: 'GET',
       headers: {
@@ -121,14 +133,14 @@ async function runInstitutionStatsSuite() {
     // Test 2: KIT002 Overview Statistics Verification
     // -------------------------------------------------------------
     console.log('2️⃣  Testing KIT002 Overview Statistics (Zero-state verification)...');
-    const kitToken = await loginUser('kiterode@gmail.com');
+    const kitToken = await loginUser('admin@kiterode.ac.in');
     if (!kitToken) {
-      throw new Error('Failed to login as KIT002 (kiterode@gmail.com)');
+      throw new Error('Failed to login as KIT002 (admin@kiterode.ac.in)');
     }
 
     const kitRes = await makeRequest({
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/institution/overview',
       method: 'GET',
       headers: {
@@ -174,7 +186,7 @@ async function runInstitutionStatsSuite() {
     console.log('3️⃣  Testing Versioned API Route (/api/v1/institution/overview)...');
     const v1Res = await makeRequest({
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/v1/institution/overview',
       method: 'GET',
       headers: {
@@ -191,14 +203,14 @@ async function runInstitutionStatsSuite() {
     // Test 4: RBAC Security - Student Access Blocked (403 Forbidden)
     // -------------------------------------------------------------
     console.log('4️⃣  Testing RBAC: Student Role Access Attempt...');
-    const studentToken = await loginUser('student101@gmail.com');
+    const studentToken = await loginUser('gokul.k@bitsathy.ac.in');
     if (!studentToken) {
-      throw new Error('Failed to login as student (student101@gmail.com)');
+      throw new Error('Failed to login as student (gokul.k@bitsathy.ac.in)');
     }
 
     const studentRes = await makeRequest({
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/institution/overview',
       method: 'GET',
       headers: {
@@ -218,7 +230,7 @@ async function runInstitutionStatsSuite() {
     console.log('5️⃣  Testing Unauthenticated Access (Missing Bearer Token)...');
     const unauthRes = await makeRequest({
       hostname: 'localhost',
-      port: 5000,
+      port: TEST_PORT,
       path: '/api/institution/overview',
       method: 'GET',
     });
@@ -230,10 +242,15 @@ async function runInstitutionStatsSuite() {
     console.log('   ✅ Authentication properly enforced: Missing token blocked with 401 Unauthorized!\n');
 
     console.log('🎉 ALL INSTITUTION OVERVIEW TESTS PASSED WITH 100% SUCCESS!');
-    process.exit(0);
   } catch (err) {
     console.error('❌ Test suite failed:', err);
-    process.exit(1);
+    exitCode = 1;
+  } finally {
+    if (serverInstance) {
+      await new Promise((resolve) => serverInstance.close(resolve));
+    }
+    await mongoose.connection.close();
+    process.exit(exitCode);
   }
 }
 

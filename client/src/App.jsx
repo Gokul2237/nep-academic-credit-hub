@@ -372,7 +372,7 @@ export default function App() {
             {/* Phase 4 */}
             <Route
               path="transfers"
-              element={<StudentTransferPage />}
+              element={<Navigate to="/student/dashboard" replace />}
             />
 
 
@@ -401,12 +401,12 @@ export default function App() {
 
             <Route
               path="roadmap"
-              element={<StudentRoadmapPage />}
+              element={<Navigate to="/student/dashboard" replace />}
             />
 
             <Route
               path="readiness-roadmap"
-              element={<StudentRoadmapPage />}
+              element={<Navigate to="/student/dashboard" replace />}
             />
 
             <Route
@@ -416,7 +416,7 @@ export default function App() {
 
             <Route
               path="simulator"
-              element={<StudentSimulatorPage />}
+              element={<Navigate to="/student/dashboard" replace />}
             />
 
             <Route

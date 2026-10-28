@@ -18,15 +18,17 @@ router.use(authenticate);
 // Transfer Statistics
 router.get('/stats', getTransferStats);
 
-// General Query & Creation
+// General Query (Students may view their own history; institutions & admins query their scope)
 router.get('/', getTransfers);
-router.post('/', authorize('student', 'institution', 'admin'), createTransfer);
+
+// Transfer Initiation: Strictly restricted to authorized institutions and admins
+router.post('/', authorize('institution', 'admin'), createTransfer);
 
 // Single Record Details
 router.get('/:id', getTransferById);
 
-// Evaluation & Actions
+// Evaluation & Actions: Strictly restricted to authorized institutions and admins
 router.put('/:id/review', authorize('institution', 'admin'), reviewTransfer);
-router.put('/:id/cancel', authorize('student', 'admin'), cancelTransfer);
+router.put('/:id/cancel', authorize('institution', 'admin'), cancelTransfer);
 
 module.exports = router;

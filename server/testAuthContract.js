@@ -227,7 +227,7 @@ async function runAuthContractSuite() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       },
-      { email: 'bitsathy@gmail.com', password: '123456' }
+      { email: 'admin@bitsathy.ac.in', password: '123456' }
     );
     assert(instLogin.status === 200, 'Institution login returns HTTP 200');
     assert(instLogin.body.data.user.role === 'institution', 'Institution user has role "institution"');
@@ -242,7 +242,7 @@ async function runAuthContractSuite() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       },
-      { email: 'student101@gmail.com', password: '123456' }
+      { email: 'gokul.k@bitsathy.ac.in', password: '123456' }
     );
     assert(studentLogin.status === 200, 'Student login returns HTTP 200');
     assert(studentLogin.body.data.user.role === 'student', 'Student user has role "student"');

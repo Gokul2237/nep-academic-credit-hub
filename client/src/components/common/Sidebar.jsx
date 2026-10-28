@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle,
   GitFork,
-  Compass,
   Sparkles,
   ArrowRightLeft,
   Award,
@@ -49,11 +48,6 @@ const studentNavItems = [
     icon: Clock,
   },
   {
-    name: 'Credit Transfers',
-    path: '/student/transfers',
-    icon: ArrowRightLeft,
-  },
-  {
     name: 'Eligibility Tracker',
     path: '/student/eligibility',
     icon: CheckCircle,
@@ -64,19 +58,9 @@ const studentNavItems = [
     icon: GitFork,
   },
   {
-    name: 'Readiness & Roadmap',
-    path: '/student/roadmap',
-    icon: Compass,
-  },
-  {
     name: 'Course Recommendations',
     path: '/student/recommendations',
     icon: Sparkles,
-  },
-  {
-    name: 'Transfer Simulator',
-    path: '/student/simulator',
-    icon: ArrowRightLeft,
   },
   {
     name: 'Certificates',

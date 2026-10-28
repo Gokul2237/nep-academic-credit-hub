@@ -1,16 +1,16 @@
 /**
- * Safe, Non-Destructive MongoDB Atlas Migration Script
- *
- * Copies all collections from local `nep_academic_hub` to target MongoDB Atlas.
+ * Safe, Non-Destructive MongoDB Atlas Migration & Conflict Resolution Script
  *
  * Guarantees:
  * - Read-only operations against local MongoDB (zero deletions, zero modifications).
- * - Only accesses database `nep_academic_hub` (never touches FocusMate or other databases).
- * - Verifies collection counts before and after migration.
- *
- * Usage:
- *   $env:TARGET_MONGO_URI="mongodb+srv://<user>:<password>@<cluster>.mongodb.net/nep_academic_hub?retryWrites=true&w=majority"
- *   node server/scripts/migrateToAtlas.js
+ * - Connects strictly to `mongodb://127.0.0.1:27017/nep_academic_hub`.
+ * - Validates local database name is exactly `nep_academic_hub` before reading.
+ * - Never touches FocusMate or any other database.
+ * - Inspects target collection counts and existing records BEFORE writing.
+ * - Handles duplicate-key errors explicitly:
+ *     - If existing document is identical: counts as IDENTICAL_MATCH (safe idempotent).
+ *     - If existing document differs: flags as DATA_CONFLICT, preserves existing, reports mismatch.
+ * - Supports dry-run inspection mode (--dry-run).
  */
 
 const mongoose = require('mongoose');
@@ -19,143 +19,169 @@ const LOCAL_URI = process.env.LOCAL_MONGO_URI || 'mongodb://127.0.0.1:27017/nep_
 const TARGET_URI = process.env.TARGET_MONGO_URI;
 
 const COLLECTIONS = [
+  'creditpolicies',
   'institutions',
   'users',
   'courses',
-  'creditpolicies',
   'academiccredits',
   'semesterresults',
   'resultimportbatches',
-  'transferrequests',
-  'certificates',
-  'transcripts',
-  'apikeys',
-  'apilogs',
   'auditlogs',
+  'apilogs',
+  'transcripts',
+  'certificates',
+  'transferrequests',
+  'apikeys',
 ];
 
-async function migrate() {
+// Helper for deep equality check between documents
+function areDocsIdentical(docA, docB) {
+  const cleanA = JSON.stringify(docA);
+  const cleanB = JSON.stringify(docB);
+  return cleanA === cleanB;
+}
+
+async function inspectOrMigrate({ dryRun = false } = {}) {
   console.log('===============================================================');
-  console.log('🚀 NEP Academic Credit Hub — Safe Database Migration to Atlas');
+  console.log(`🚀 NEP Academic Credit Hub — Atlas Migration [${dryRun ? 'DRY-RUN / INSPECTION' : 'MIGRATION'}]`);
   console.log('===============================================================\n');
 
   if (!TARGET_URI) {
-    console.error('❌ ERROR: TARGET_MONGO_URI environment variable is required.');
-    console.error('Please set TARGET_MONGO_URI to your MongoDB Atlas connection string:');
-    console.error('  $env:TARGET_MONGO_URI="mongodb+srv://<user>:<password>@<cluster>.mongodb.net/nep_academic_hub?retryWrites=true&w=majority"');
-    process.exit(1);
+    throw new Error('TARGET_MONGO_URI environment variable is required.');
   }
 
   if (TARGET_URI.includes('127.0.0.1') || TARGET_URI.includes('localhost')) {
-    console.error('❌ ERROR: TARGET_MONGO_URI cannot point to localhost/127.0.0.1.');
-    console.error('It must be your remote cloud MongoDB Atlas connection string.');
-    process.exit(1);
+    throw new Error('TARGET_MONGO_URI cannot point to localhost/127.0.0.1. Must be a remote cloud Atlas URI.');
   }
 
   let localConn = null;
   let targetConn = null;
 
   try {
-    // 1. Connect to Local MongoDB
-    console.log(`🔌 Connecting to Local MongoDB: ${LOCAL_URI}`);
+    // 1. Connect strictly to local source
+    console.log(`🔌 Connecting to Local Source: ${LOCAL_URI}`);
     localConn = await mongoose.createConnection(LOCAL_URI, {
       serverSelectionTimeoutMS: 5000,
     }).asPromise();
-    console.log(`✅ Local MongoDB Connected: ${localConn.host}/${localConn.name}`);
 
     if (localConn.name !== 'nep_academic_hub') {
-      throw new Error(`Safety guard triggered: Local database name is '${localConn.name}', expected 'nep_academic_hub'. Aborting.`);
+      throw new Error(`CRITICAL ABORT: Connected to local DB '${localConn.name}', expected 'nep_academic_hub'.`);
     }
+    console.log(`✅ Local Source Verified: ${localConn.host}/${localConn.name}`);
 
-    // 2. Connect to Target Atlas MongoDB
-    console.log(`🔌 Connecting to MongoDB Atlas Target...`);
+    // 2. Connect to Atlas target
+    console.log(`🔌 Connecting to Atlas Target: ${TARGET_URI.replace(/:([^:@]+)@/, ':****@')}`);
     targetConn = await mongoose.createConnection(TARGET_URI, {
       serverSelectionTimeoutMS: 10000,
     }).asPromise();
-    console.log(`✅ MongoDB Atlas Connected: ${targetConn.host}/${targetConn.name}`);
+    console.log(`✅ Atlas Target Verified: ${targetConn.host}/${targetConn.name}`);
 
-    console.log('\n---------------------------------------------------------------');
-    console.log('📦 Starting Collection Copy & Verification');
-    console.log('---------------------------------------------------------------\n');
+    const report = {
+      localDatabase: localConn.name,
+      targetHost: targetConn.host,
+      targetDatabase: targetConn.name,
+      isDryRun: dryRun,
+      collections: [],
+      hasConflicts: false,
+    };
 
-    const summary = [];
+    console.log('\n--- Checking Collections & Pre-Existing Records ---');
 
     for (const colName of COLLECTIONS) {
       const localCol = localConn.db.collection(colName);
       const targetCol = targetConn.db.collection(colName);
 
-      // Read-only count on local
       const localCount = await localCol.countDocuments();
+      const initialTargetCount = await targetCol.countDocuments();
 
-      if (localCount === 0) {
-        console.log(`ℹ️  [${colName}]: 0 local documents. Skipping.`);
-        summary.push({ collection: colName, local: 0, target: 0, status: 'EMPTY' });
+      const colSummary = {
+        collection: colName,
+        sourceCount: localCount,
+        initialTargetCount,
+        inserted: 0,
+        identicalMatched: 0,
+        conflicts: 0,
+        finalTargetCount: initialTargetCount,
+        status: 'PENDING',
+      };
+
+      if (localCount === 0 && initialTargetCount === 0) {
+        colSummary.status = 'EMPTY_MATCH';
+        report.collections.push(colSummary);
         continue;
       }
 
-      console.log(`📥 [${colName}]: Reading ${localCount} documents from local...`);
-      const docs = await localCol.find({}).toArray();
+      const sourceDocs = await localCol.find({}).toArray();
 
-      // Check target count
-      const existingTargetCount = await targetCol.countDocuments();
-      if (existingTargetCount > 0) {
-        console.warn(`⚠️  [${colName}]: Target Atlas collection already contains ${existingTargetCount} documents.`);
+      if (dryRun) {
+        // Inspection only
+        if (initialTargetCount > 0) {
+          // Compare sample or all documents
+          const targetDocs = await targetCol.find({}).toArray();
+          const targetMap = new Map(targetDocs.map(d => [String(d._id), d]));
+
+          for (const sDoc of sourceDocs) {
+            const tDoc = targetMap.get(String(sDoc._id));
+            if (tDoc) {
+              if (areDocsIdentical(sDoc, tDoc)) {
+                colSummary.identicalMatched++;
+              } else {
+                colSummary.conflicts++;
+              }
+            }
+          }
+        }
+        colSummary.status = colSummary.conflicts > 0 ? 'CONFLICT_DETECTED' : (initialTargetCount === 0 ? 'READY_FOR_IMPORT' : 'PARTIAL_MATCH');
+        if (colSummary.conflicts > 0) report.hasConflicts = true;
+        report.collections.push(colSummary);
+        continue;
       }
 
-      // Safe batch insert with ordered: false to preserve unique indexes
+      // Live Migration Execution
       let insertedCount = 0;
-      if (docs.length > 0) {
-        try {
-          const insertResult = await targetCol.insertMany(docs, { ordered: false });
-          insertedCount = insertResult.insertedCount;
-        } catch (insertErr) {
-          if (insertErr.code === 11000) {
-            // Duplicate key error - some documents already exist
-            insertedCount = insertErr.result?.nInserted || existingTargetCount;
-            console.log(`ℹ️  [${colName}]: Some documents already exist in target. Current count preserved.`);
+      let identicalCount = 0;
+      let conflictCount = 0;
+
+      for (const sDoc of sourceDocs) {
+        const existing = await targetCol.findOne({ _id: sDoc._id });
+        if (!existing) {
+          await targetCol.insertOne(sDoc);
+          insertedCount++;
+        } else {
+          if (areDocsIdentical(sDoc, existing)) {
+            identicalCount++;
           } else {
-            throw insertErr;
+            conflictCount++;
+            console.error(`⚠️ CONFLICT in [${colName}] for _id: ${sDoc._id}: Existing document differs from source. Preserved target document.`);
           }
         }
       }
 
-      // Verify count in Atlas
-      const targetCount = await targetCol.countDocuments();
-      const match = targetCount >= localCount;
-      console.log(`✅ [${colName}]: Local Count = ${localCount} | Atlas Count = ${targetCount} [${match ? 'VERIFIED' : 'MISMATCH'}]`);
+      const finalCount = await targetCol.countDocuments();
+      colSummary.inserted = insertedCount;
+      colSummary.identicalMatched = identicalCount;
+      colSummary.conflicts = conflictCount;
+      colSummary.finalTargetCount = finalCount;
+      colSummary.status = conflictCount > 0 ? 'CONFLICTS_REPORTED' : (finalCount >= localCount ? 'VERIFIED' : 'COUNT_MISMATCH');
 
-      summary.push({
-        collection: colName,
-        local: localCount,
-        target: targetCount,
-        status: match ? 'VERIFIED' : 'MISMATCH',
-      });
+      if (conflictCount > 0) report.hasConflicts = true;
+      report.collections.push(colSummary);
     }
 
-    console.log('\n===============================================================');
-    console.log('📊 MIGRATION SUMMARY & VERIFICATION MATRIX');
-    console.log('===============================================================');
-    console.table(summary);
-
-    const allVerified = summary.every((s) => s.local === 0 || s.status === 'VERIFIED');
-    if (allVerified) {
-      console.log('\n🎉 ALL COLLECTIONS SUCCESSFULLY MIGRATED AND VERIFIED ON ATLAS!');
-      console.log('You may now safely configure MONGO_URI in your Render Web Service.');
-    } else {
-      console.warn('\n⚠️ Some collections had count discrepancies. Please check the table above.');
-    }
-
-  } catch (err) {
-    console.error('\n❌ Migration failed:', err.message);
+    console.table(report.collections);
+    return report;
   } finally {
     if (localConn) await localConn.close();
     if (targetConn) await targetConn.close();
-    console.log('\n🔒 Connections closed. Local database remains unmodified.');
   }
 }
 
 if (require.main === module) {
-  migrate();
+  const isDryRun = process.argv.includes('--dry-run');
+  inspectOrMigrate({ dryRun: isDryRun }).catch(err => {
+    console.error('❌ Error:', err.message);
+    process.exit(1);
+  });
 }
 
-module.exports = { migrate };
+module.exports = { inspectOrMigrate };

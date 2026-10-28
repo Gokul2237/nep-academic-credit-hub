@@ -641,21 +641,56 @@ async function runTestSuite() {
     console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
     console.log('================================================================\n');
 
-    if (require.main === module) {
-      process.exit(0);
-    }
     return { passedTests, totalTests, serverInstance };
   } catch (err) {
     console.error('\n❌ Test Suite Failed:', err);
-    if (require.main === module) {
-      process.exit(1);
-    }
     throw err;
+  } finally {
+    // Automated teardown: Clean up test artifacts created with this testId
+    try {
+      const db = mongoose.connection.db;
+      if (db) {
+        const testCourses = await db.collection('courses').find({ courseCode: { $in: [`CS${testId}`, `CSB${testId}`] } }).toArray();
+        const testCourseIds = testCourses.map(c => c._id);
+        if (testCourseIds.length > 0) {
+          await db.collection('academiccredits').deleteMany({ courseId: { $in: testCourseIds } });
+          await db.collection('semesterresults').deleteMany({ courseId: { $in: testCourseIds } });
+          await db.collection('courses').deleteMany({ _id: { $in: testCourseIds } });
+        }
+        const testUserDocs = await db.collection('users').find({
+          $or: [
+            { email: { $regex: new RegExp(testId) } },
+            { studentId: { $regex: new RegExp(testId) } }
+          ]
+        }).toArray();
+        const testUserIds = testUserDocs.map(u => u._id);
+        if (testUserIds.length > 0) {
+          await db.collection('resultimportbatches').deleteMany({ uploadedBy: { $in: testUserIds } });
+          await db.collection('auditlogs').deleteMany({
+            $or: [
+              { userId: { $in: testUserIds } },
+              { performedBy: { $in: testUserIds } },
+              { 'details.studentAbcId': { $regex: new RegExp(testId) } },
+              { 'details.batchId': { $regex: new RegExp(testId) } }
+            ]
+          });
+          await db.collection('users').deleteMany({ _id: { $in: testUserIds } });
+        }
+        console.log(`   🧹 Cleaned up temporary test artifacts for testId: ${testId}`);
+      }
+    } catch (cleanErr) {
+      console.warn('⚠️ Teardown cleanup error:', cleanErr.message);
+    }
+    if (serverInstance && serverInstance.close) {
+      serverInstance.close();
+    }
   }
 }
 
 if (require.main === module) {
-  runTestSuite();
+  runTestSuite()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }
 
 module.exports = runTestSuite;
