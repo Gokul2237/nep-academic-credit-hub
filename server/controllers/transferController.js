@@ -5,34 +5,31 @@ const { User, ROLES } = require('../models/User');
 const Institution = require('../models/Institution');
 const AuditLog = require('../models/AuditLog');
 const ApiResponse = require('../utils/apiResponse');
+const { completeTransferWorkflow } = require('../services/transferSyncService');
 
 /**
  * Initiate a new Credit Transfer Request
  * POST /api/transfers
- * Access: Student, Admin
+ * Access: Student (for self), Institution (for enrolled student), Admin
  */
 const createTransfer = async (req, res) => {
   try {
     const { destinationInstitutionId, creditIds, reason } = req.body;
 
-    // Strict RBAC: Students are not permitted to initiate credit transfer requests
+    // 1. Resolve student (student themselves, or specified by institution/admin)
+    let studentId = null;
     if (req.user.role === 'student' || req.user.role === ROLES.STUDENT) {
-      return ApiResponse.error(
-        res,
-        'Access denied: Credit transfer requests must be initiated by authorized institutions or administrators.',
-        403
-      );
+      studentId = req.user._id;
+    } else {
+      if (!req.body.studentId) {
+        return ApiResponse.error(
+          res,
+          'Enrolled student ID is required to initiate a transfer.',
+          400
+        );
+      }
+      studentId = req.body.studentId;
     }
-
-    // 1. Resolve student (must be specified by the initiating institution or admin)
-    if (!req.body.studentId) {
-      return ApiResponse.error(
-        res,
-        'Enrolled student ID is required to initiate a transfer.',
-        400
-      );
-    }
-    const studentId = req.body.studentId;
 
     const student = await User.findById(studentId);
     if (!student || student.role !== ROLES.STUDENT) {
@@ -360,8 +357,29 @@ const reviewTransfer = async (req, res) => {
       }
     }
 
-    // Prevent changing state of finalized requests
-    const finalizedStatuses = ['APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED'];
+    // Prevent re-processing finalized requests safely & idempotently
+    if (transfer.status === 'COMPLETED') {
+      const populatedTransfer = await TransferRequest.findById(transfer._id)
+        .populate('studentId', 'name email studentId')
+        .populate('sourceInstitutionId', 'name code type')
+        .populate('destinationInstitutionId', 'name code type')
+        .populate({
+          path: 'creditIds',
+          populate: {
+            path: 'courseId',
+            select: 'courseCode courseName credits department',
+          },
+        })
+        .populate('reviewedBy', 'name email');
+
+      return ApiResponse.success(
+        res,
+        populatedTransfer,
+        'Transfer request has already been completed.'
+      );
+    }
+
+    const finalizedStatuses = ['REJECTED', 'CANCELLED'];
     if (finalizedStatuses.includes(transfer.status)) {
       return ApiResponse.error(
         res,
@@ -371,7 +389,7 @@ const reviewTransfer = async (req, res) => {
     }
 
     const { status, remarks, rejectionReason } = req.body;
-    const allowedReviewStatuses = ['APPROVED', 'REJECTED', 'UNDER_REVIEW', 'CONDITIONAL_APPROVAL'];
+    const allowedReviewStatuses = ['APPROVED', 'COMPLETED', 'REJECTED', 'UNDER_REVIEW', 'CONDITIONAL_APPROVAL'];
 
     const targetStatus = (status || '').toUpperCase();
     if (!allowedReviewStatuses.includes(targetStatus)) {
@@ -382,39 +400,99 @@ const reviewTransfer = async (req, res) => {
       );
     }
 
-    if (targetStatus === 'REJECTED' && !rejectionReason?.trim()) {
-      return ApiResponse.error(
-        res,
-        'Rejection reason is required when rejecting a transfer request.',
-        400
-      );
-    }
+    if (targetStatus === 'REJECTED') {
+      if (!rejectionReason?.trim()) {
+        return ApiResponse.error(
+          res,
+          'Rejection reason is required when rejecting a transfer request.',
+          400
+        );
+      }
 
-    transfer.status = targetStatus;
-    if (remarks) transfer.remarks = remarks.trim();
-    if (rejectionReason) transfer.rejectionReason = rejectionReason.trim();
-
-    if (['APPROVED', 'REJECTED', 'CONDITIONAL_APPROVAL'].includes(targetStatus)) {
+      // IF REJECTED:
+      // Keep the student's current institution as Institution A.
+      // Keep all existing academic credits with student's current academic history.
+      // Do not move or duplicate student or credit records.
+      transfer.status = 'REJECTED';
+      transfer.rejectionReason = rejectionReason.trim();
+      if (remarks) transfer.remarks = remarks.trim();
       transfer.reviewedBy = req.user._id;
       transfer.reviewedAt = new Date();
-    }
+      await transfer.save();
 
-    await transfer.save();
+      // Record Immutable Audit Log
+      await AuditLog.create({
+        logId: `LOG-TR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        userId: req.user._id,
+        institutionId: req.user.institutionId || transfer.destinationInstitutionId,
+        action: 'TRANSFER_REJECTED',
+        resource: `TransferRequest:${transfer._id}`,
+        details: {
+          transferId: transfer._id,
+          studentId: transfer.studentId,
+          sourceInstitutionId: transfer.sourceInstitutionId,
+          destinationInstitutionId: transfer.destinationInstitutionId,
+          status: 'REJECTED',
+          remarks: transfer.remarks,
+          rejectionReason: transfer.rejectionReason,
+        },
+        ipAddress: req.ip || '127.0.0.1',
+      }).catch((e) => console.error('AuditLog error in reviewTransfer:', e.message));
 
-    // ON APPROVAL: Safely update credit records and prevent duplicate transfers
-    if (targetStatus === 'APPROVED') {
-      await AcademicCredit.updateMany(
-        { _id: { $in: transfer.creditIds } },
-        {
-          $set: {
-            isTransferred: true,
-            transferredTo: transfer.destinationInstitutionId,
-            transferRequestId: transfer._id,
-            transferredAt: new Date(),
+      const updatedTransfer = await TransferRequest.findById(transfer._id)
+        .populate('studentId', 'name email studentId')
+        .populate('sourceInstitutionId', 'name code type')
+        .populate('destinationInstitutionId', 'name code type')
+        .populate({
+          path: 'creditIds',
+          populate: {
+            path: 'courseId',
+            select: 'courseCode courseName credits department',
           },
-        }
+        })
+        .populate('reviewedBy', 'name email');
+
+      return ApiResponse.success(
+        res,
+        updatedTransfer,
+        'Transfer request has been rejected. Student and credits remain with current institution.'
       );
     }
+
+    // ON ACCEPTANCE (APPROVED or COMPLETED): Automatically complete the transfer
+    if (['APPROVED', 'COMPLETED'].includes(targetStatus)) {
+      await completeTransferWorkflow({
+        transferId: transfer._id,
+        reviewerId: req.user._id,
+        remarks: (remarks || '').trim(),
+      });
+
+      const updatedTransfer = await TransferRequest.findById(transfer._id)
+        .populate('studentId', 'name email studentId')
+        .populate('sourceInstitutionId', 'name code type')
+        .populate('destinationInstitutionId', 'name code type')
+        .populate({
+          path: 'creditIds',
+          populate: {
+            path: 'courseId',
+            select: 'courseCode courseName credits department',
+          },
+        })
+        .populate('reviewedBy', 'name email');
+
+      return ApiResponse.success(
+        res,
+        updatedTransfer,
+        'Transfer request accepted and completed. Student institution association and all academic credits have been transferred to destination institution.'
+      );
+    }
+
+    // For other review statuses (UNDER_REVIEW, CONDITIONAL_APPROVAL)
+    transfer.status = targetStatus;
+    if (remarks) transfer.remarks = remarks.trim();
+    transfer.reviewedBy = req.user._id;
+    transfer.reviewedAt = new Date();
+    await transfer.save();
 
     // Record Immutable Audit Log
     AuditLog.create({
@@ -430,7 +508,6 @@ const reviewTransfer = async (req, res) => {
         destinationInstitutionId: transfer.destinationInstitutionId,
         status: targetStatus,
         remarks: transfer.remarks,
-        rejectionReason: transfer.rejectionReason,
       },
       ipAddress: req.ip || '127.0.0.1',
     }).catch((e) => console.error('AuditLog error in reviewTransfer:', e.message));
@@ -462,7 +539,7 @@ const reviewTransfer = async (req, res) => {
 /**
  * Cancel Transfer Request
  * PUT /api/transfers/:id/cancel
- * Access: Student (owner), Admin
+ * Access: Student (owner), Institution (outgoing initiator), Admin
  */
 const cancelTransfer = async (req, res) => {
   try {
@@ -475,13 +552,15 @@ const cancelTransfer = async (req, res) => {
       return ApiResponse.error(res, 'Transfer request not found.', 404);
     }
 
-    // Role check: Students cannot manage or cancel transfers
+    // Role check: Students can only cancel their own transfer requests
     if (req.user.role === 'student' || req.user.role === ROLES.STUDENT) {
-      return ApiResponse.error(
-        res,
-        'Access denied: Students are not permitted to manage or cancel transfer requests.',
-        403
-      );
+      if (transfer.studentId.toString() !== req.user._id.toString()) {
+        return ApiResponse.error(
+          res,
+          'Access denied: You can only cancel your own transfer requests.',
+          403
+        );
+      }
     }
 
     // Role check: Institution can only cancel their own outgoing transfer requests

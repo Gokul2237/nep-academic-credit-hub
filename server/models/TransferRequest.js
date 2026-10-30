@@ -83,6 +83,19 @@ const transferRequestSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+    completedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    completionDetails: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,

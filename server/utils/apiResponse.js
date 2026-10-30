@@ -21,22 +21,30 @@ class ApiResponse {
     });
   }
 
-  static paginated(res, data = [], total = 0, page = 1, limit = 10, message = 'Data retrieved successfully') {
-    const totalPages = Math.ceil(total / limit);
-    return res.status(200).json({
+  static paginated(res, data = [], total = 0, page = 1, limit = 10, message = 'Data retrieved successfully', summary = null) {
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 10);
+    const totalPages = Math.max(1, Math.ceil(total / parsedLimit));
+    const responsePayload = {
       success: true,
       message,
       data,
       pagination: {
         total,
-        page: Number(page),
-        limit: Number(limit),
+        page: parsedPage,
+        limit: parsedLimit,
         totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
+        hasNextPage: parsedPage < totalPages,
+        hasPrevPage: parsedPage > 1,
       },
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (summary) {
+      responsePayload.summary = summary;
+    }
+
+    return res.status(200).json(responsePayload);
   }
 
   static error(res, message = 'Internal Server Error', statusCode = 500, errors = null) {

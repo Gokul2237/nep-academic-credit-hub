@@ -170,47 +170,219 @@ const createCredit = async (req, res) => {
  * Get Academic Credits list
  * GET /api/credits
  * Access: Scoped per role
+ * Supports: Server-side pagination, search across student/course/institution,
+ * filters (student, institution, course, semester, academicYear, date, verificationStatus).
  */
 const getCredits = async (req, res) => {
   try {
-    const { studentId, institutionId, verificationStatus, semester, academicYear, page = 1, limit = 50 } = req.query;
-    const query = {};
+    const {
+      studentId,
+      institutionId,
+      courseId,
+      verificationStatus,
+      semester,
+      academicYear,
+      grade,
+      search,
+      q,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 50,
+    } = req.query;
 
-    // Role-based scoping
+    const queryConditions = [];
+
+    // 1. Role-based scoping
     if (req.user.role === 'student') {
       // Students can strictly only view their own credits
-      query.studentId = req.user._id;
+      queryConditions.push({ studentId: req.user._id });
     } else if (req.user.role === 'institution') {
-      // Institutions can view credits they issued or credits transferred to them
-      query.$or = [{ institutionId: req.user.institutionId }, { transferredTo: req.user.institutionId }];
-      if (studentId) query.studentId = studentId;
+      const instId = req.user.institutionId;
+      if (!instId) {
+        return ApiResponse.error(res, 'User is not linked to any institution record.', 400);
+      }
+
+      // Find all students currently enrolled in this institution
+      const enrolledStudentIds = await User.find({
+        institutionId: instId,
+        role: ROLES.STUDENT,
+      }).distinct('_id');
+
+      // Requirement 4: Ensure Institution Academic Credits shows records based on the
+      // student's current institution association, while retaining historical issuer details.
+      // An institution must never access another institution's private credit records.
+      queryConditions.push({
+        $or: [
+          { studentId: { $in: enrolledStudentIds } },
+          { transferredTo: instId },
+        ],
+      });
     } else if (req.user.role === 'admin') {
-      // Admin has full search capability
-      if (studentId) query.studentId = studentId;
-      if (institutionId) query.institutionId = institutionId;
+      // Admin has full visibility across all registered institutions
+      if (institutionId && mongoose.Types.ObjectId.isValid(institutionId)) {
+        const instStudentIds = await User.find({
+          institutionId,
+          role: ROLES.STUDENT,
+        }).distinct('_id');
+
+        queryConditions.push({
+          $or: [
+            { institutionId },
+            { transferredTo: institutionId },
+            { studentId: { $in: instStudentIds } },
+          ],
+        });
+      }
     }
 
-    if (verificationStatus) query.verificationStatus = verificationStatus;
-    if (semester) query.semester = Number(semester);
-    if (academicYear) query.academicYear = academicYear;
+    // 2. Specific Entity Filters
+    if (studentId) {
+      if (mongoose.Types.ObjectId.isValid(studentId)) {
+        queryConditions.push({ studentId });
+      } else {
+        const matchedUsers = await User.find({
+          $or: [
+            { studentId: String(studentId).trim() },
+            { email: String(studentId).toLowerCase().trim() },
+          ],
+        }).distinct('_id');
+        queryConditions.push({ studentId: { $in: matchedUsers } });
+      }
+    }
 
-    const skip = (Number(page) - 1) * Number(limit);
-    const total = await AcademicCredit.countDocuments(query);
-    const credits = await AcademicCredit.find(query)
-      .populate('studentId', 'name email studentId')
-      .populate('courseId', 'courseCode courseName credits department courseLevel')
-      .populate('institutionId', 'name code type')
-      .sort({ academicYear: -1, semester: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    if (courseId && mongoose.Types.ObjectId.isValid(courseId)) {
+      queryConditions.push({ courseId });
+    }
+
+    if (verificationStatus) {
+      queryConditions.push({ verificationStatus: String(verificationStatus).toLowerCase().trim() });
+    }
+
+    if (semester !== undefined && semester !== '') {
+      queryConditions.push({ semester: Number(semester) });
+    }
+
+    if (academicYear) {
+      queryConditions.push({ academicYear: String(academicYear).trim() });
+    }
+
+    if (grade) {
+      queryConditions.push({ grade: String(grade).toUpperCase().trim() });
+    }
+
+    // 3. Date Filters (awardDate or createdAt)
+    if (startDate || endDate) {
+      const dateFilter = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        if (!isNaN(start.getTime())) {
+          dateFilter.$gte = start;
+        }
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        if (!isNaN(end.getTime())) {
+          end.setHours(23, 59, 59, 999);
+          dateFilter.$lte = end;
+        }
+      }
+      if (Object.keys(dateFilter).length > 0) {
+        queryConditions.push({
+          $or: [
+            { awardDate: dateFilter },
+            { createdAt: dateFilter },
+          ],
+        });
+      }
+    }
+
+    // 4. Free-text Search across Student, Course, and Institution
+    const searchTerm = (search || q || '').trim();
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+
+      const [matchedStudents, matchedCourses, matchedInstitutions] = await Promise.all([
+        User.find({
+          $or: [
+            { name: searchRegex },
+            { studentId: searchRegex },
+            { email: searchRegex },
+          ],
+        }).distinct('_id'),
+        Course.find({
+          $or: [
+            { courseCode: searchRegex },
+            { courseName: searchRegex },
+          ],
+        }).distinct('_id'),
+        Institution.find({
+          $or: [
+            { name: searchRegex },
+            { code: searchRegex },
+          ],
+        }).distinct('_id'),
+      ]);
+
+      queryConditions.push({
+        $or: [
+          { studentId: { $in: matchedStudents } },
+          { courseId: { $in: matchedCourses } },
+          { institutionId: { $in: matchedInstitutions } },
+          { transferredTo: { $in: matchedInstitutions } },
+        ],
+      });
+    }
+
+    const finalQuery = queryConditions.length > 0 ? { $and: queryConditions } : {};
+
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Math.min(200, Number(limit) || 50));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // Fetch paginated results and live summary metrics in parallel
+    const [total, credits, summaryAgg] = await Promise.all([
+      AcademicCredit.countDocuments(finalQuery),
+      AcademicCredit.find(finalQuery)
+        .populate('studentId', 'name email studentId currentSemester institutionId institutionCode institutionName')
+        .populate('courseId', 'courseCode courseName credits department courseLevel semester')
+        .populate('institutionId', 'name code type')
+        .populate('transferredTo', 'name code type')
+        .sort({ academicYear: -1, semester: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(parsedLimit),
+      AcademicCredit.aggregate([
+        { $match: finalQuery },
+        {
+          $group: {
+            _id: null,
+            totalCreditsSum: { $sum: '$credits' },
+            verifiedCount: {
+              $sum: { $cond: [{ $eq: ['$verificationStatus', 'verified'] }, 1, 0] },
+            },
+            verifiedCreditsSum: {
+              $sum: { $cond: [{ $eq: ['$verificationStatus', 'verified'] }, '$credits', 0] },
+            },
+          },
+        },
+      ]),
+    ]);
+
+    const summary = {
+      totalRecords: total,
+      totalVerified: summaryAgg[0]?.verifiedCount || 0,
+      totalCreditUnits: summaryAgg[0]?.totalCreditsSum || 0,
+      verifiedCreditUnits: summaryAgg[0]?.verifiedCreditsSum || 0,
+    };
 
     return ApiResponse.paginated(
       res,
       credits,
       total,
-      page,
-      limit,
-      'Credit records retrieved successfully.'
+      parsedPage,
+      parsedLimit,
+      'Credit records retrieved successfully.',
+      summary
     );
   } catch (error) {
     console.error('Get Credits Error:', error);
@@ -225,9 +397,10 @@ const getCredits = async (req, res) => {
 const getCreditById = async (req, res) => {
   try {
     const credit = await AcademicCredit.findById(req.params.id)
-      .populate('studentId', 'name email studentId')
+      .populate('studentId', 'name email studentId institutionId institutionCode institutionName')
       .populate('courseId', 'courseCode courseName credits department courseLevel')
-      .populate('institutionId', 'name code type contactEmail');
+      .populate('institutionId', 'name code type contactEmail')
+      .populate('transferredTo', 'name code type contactEmail');
 
     if (!credit) {
       return ApiResponse.error(res, 'Academic credit record not found.', 404);
@@ -241,16 +414,26 @@ const getCreditById = async (req, res) => {
       return ApiResponse.error(res, 'Access denied. You can only view your own credits.', 403);
     }
 
-    if (
-      req.user.role === 'institution' &&
-      credit.institutionId._id.toString() !== req.user.institutionId.toString() &&
-      credit.transferredTo?.toString() !== req.user.institutionId.toString()
-    ) {
-      return ApiResponse.error(
-        res,
-        'Access denied. You cannot view credits issued by another institution.',
-        403
-      );
+    if (req.user.role === 'institution') {
+      const userInstId = req.user.institutionId?.toString();
+      const studentCurrentInstId = credit.studentId?.institutionId?.toString();
+      const awardingInstId = credit.institutionId?._id?.toString() || credit.institutionId?.toString();
+      const transferredToInstId = credit.transferredTo?._id?.toString() || credit.transferredTo?.toString();
+
+      // Tenant isolation: An institution can only view if the student is currently enrolled at this institution,
+      // or if the credit was transferred to this institution,
+      // or if this institution awarded the credit and the student has not transferred away.
+      const isCurrentStudent = studentCurrentInstId === userInstId;
+      const isTransferredTo = transferredToInstId === userInstId;
+      const isAwardingInstitution = awardingInstId === userInstId && (!credit.isTransferred || isCurrentStudent);
+
+      if (!isCurrentStudent && !isTransferredTo && !isAwardingInstitution) {
+        return ApiResponse.error(
+          res,
+          'Access denied. You cannot view academic credit records belonging to another institution.',
+          403
+        );
+      }
     }
 
     const isIntegrityValid = verifyCreditIntegrity(credit);

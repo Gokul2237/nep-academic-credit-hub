@@ -21,14 +21,14 @@ router.get('/stats', getTransferStats);
 // General Query (Students may view their own history; institutions & admins query their scope)
 router.get('/', getTransfers);
 
-// Transfer Initiation: Strictly restricted to authorized institutions and admins
-router.post('/', authorize('institution', 'admin'), createTransfer);
+// Transfer Initiation: Accessible to students (for self), authorized institutions, and admins
+router.post('/', authorize('student', 'institution', 'admin'), createTransfer);
 
 // Single Record Details
 router.get('/:id', getTransferById);
 
-// Evaluation & Actions: Strictly restricted to authorized institutions and admins
+// Evaluation & Actions: Review restricted to destination institution and admin; Cancellation allowed for student owner, source institution, admin
 router.put('/:id/review', authorize('institution', 'admin'), reviewTransfer);
-router.put('/:id/cancel', authorize('institution', 'admin'), cancelTransfer);
+router.put('/:id/cancel', authorize('student', 'institution', 'admin'), cancelTransfer);
 
 module.exports = router;

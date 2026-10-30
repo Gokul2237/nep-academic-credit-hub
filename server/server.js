@@ -38,6 +38,7 @@ const gatewayRoutes = require('./routes/gatewayRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const institutionRoutes = require('./routes/institutionRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
+const { migrateApprovedTransfers } = require('./services/transferSyncService');
 // ============================================================
 // ADMIN BOOTSTRAP
 // ============================================================
@@ -312,6 +313,7 @@ connectDB()
        * There is NO public admin registration endpoint.
        */
       await ensureAdminAccount();
+      await migrateApprovedTransfers();
     }
   })
   .catch((error) => {
